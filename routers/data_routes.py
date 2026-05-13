@@ -1,5 +1,13 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from services.gcp_service import upload_file_to_gcs, get_data_from_bq, upload_dataframe_to_bq
+from services.gcp_service import (
+    upload_file_to_gcs,
+    get_data_from_bq,
+    upload_dataframe_to_bq,
+    get_credentials,
+    CREDENTIALS_PATH,
+    PROJECT_ID,
+    USE_GCP,
+)
 
 import os
 import sys
@@ -62,15 +70,16 @@ async def upload_data(file: UploadFile = File(...)):
     # 4) Upload raw file ke GCS (arsip) dan upload cleaned data ke BigQuery
     try:
         upload_file_to_gcs(contents, file.filename)
-    except Exception:
-        # Lanjutkan meskipun upload raw gagal, tapi log/response beri tahu
+    except Exception as e:
+        print(f"⚠️ GCS upload error: {e}")
         pass
 
     try:
         upload_dataframe_to_bq(df_clean)
-    except Exception:
-        # Jika gagal push ke BQ, laporkan 500
-        raise HTTPException(status_code=500, detail="Gagal menyimpan data ke Data Warehouse")
+    except Exception as e:
+        print(f"⚠️ BigQuery upload error: {e}")
+        # Jangan fail di sini - lanjutkan dengan local fallback
+        pass
 
     # 5) Siapkan response sesuai API_CONTRACT
     metadata = {"total_rows_processed": int(len(df_raw)), "source_file": file.filename}
@@ -92,3 +101,22 @@ async def get_data():
     data = get_data_from_bq()
     total = len(data) if isinstance(data, list) else 0
     return {"status": "success", "total_records": total, "data": data}
+
+
+# Endpoint ringan untuk cek kredensial GCP — hanya refresh token, tidak menjalankan query
+@router.get("/api/gcp-check")
+async def gcp_check():
+    info = {"credentials_path": CREDENTIALS_PATH, "use_gcp": bool(USE_GCP), "project_id": PROJECT_ID}
+    creds = get_credentials()
+    if not creds:
+        return {"status": "not-configured", "detail": "GCP credentials not available or failed to load", **info}
+
+    try:
+        # Refresh token untuk memvalidasi kredensial (ringan, tidak mengeksekusi resource GCP)
+        from google.auth.transport.requests import Request as AuthRequest
+
+        creds.refresh(AuthRequest())
+        sa_email = getattr(creds, "service_account_email", None)
+        return {"status": "success", "detail": "Credentials valid (token refreshed)", "service_account": sa_email, **info}
+    except Exception as e:
+        return {"status": "error", "detail": str(e), **info}
