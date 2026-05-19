@@ -1,10 +1,10 @@
 product_id,product_name,price,stock,category,source_file,processed_at
-TGR-01,Es Krim Cokelat,12000,30,Frozen,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
-TGR-02,Es Krim Vanilla,12000,25,Frozen,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
-TGR-03,Nugget Ayam,45000,40,Frozen,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
-TGR-04,Sosis Sapi,35000,0,Frozen,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
-TGR-05,Kentang Goreng,28000,50,Frozen,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
-TGR-06,Bakso Sapi,32000,35,Frozen,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
-TGR-08,Pempek Ikan,30000,15,Frozen,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
-TGR-09,Yogurt Strawberry,8500,45,Dairy,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
-TGR-10,Keju Cheddar,22000,30,Dairy,cabang_tangerang.csv,2026-05-13 13:20:34.740585+00:00
+SRG-A01,Daging Ayam 1Kg,45000,20,Segar,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
+SRG-A02,Daging Sapi 1Kg,120000,15,Segar,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
+SRG-A03,Telur Ayam 1Kg,28000,50,Segar,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
+SRG-B01,Bawang Merah 1Kg,35000,40,Bumbu,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
+SRG-B02,Bawang Putih 1Kg,40000,35,Bumbu,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
+SRG-B03,Cabai Merah 1Kg,50000,0,Bumbu,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
+SRG-B04,Cabai Rawit 1Kg,60000,10,Bumbu,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
+SRG-C01,Sayur Bayam,3000,80,Sayuran,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
+SRG-C02,Sayur Kangkung,3500,75,Sayuran,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00

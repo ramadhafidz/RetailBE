@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request
 from services.gcp_service import (
     upload_file_to_gcs,
     get_data_from_bq,
@@ -27,6 +27,15 @@ if ML_PATH not in sys.path:
 from column_mapper_lokal import standardize_dataframe
 import engine.column_mapper_core as core
 
+# Import auth utilities (robust import to work when running from repo root or inside Back_end)
+try:
+    from Back_end.auth import create_access_token, require_role
+except Exception:
+    try:
+        from auth import create_access_token, require_role
+    except Exception:
+        from .auth import create_access_token, require_role
+
 
 def _sanitize_record(rec: Dict[str, Any]) -> Dict[str, Any]:
     out: Dict[str, Any] = {}
@@ -45,8 +54,18 @@ def _sanitize_record(rec: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # Endpoint POST untuk menerima file dari Frontend
+def _resolve_role_credentials(role: str) -> tuple[str, str]:
+    if role == "admin":
+        username = os.getenv("AUTH_ADMIN_USERNAME", os.getenv("AUTH_USERNAME", "admin"))
+        password = os.getenv("AUTH_ADMIN_PASSWORD", os.getenv("AUTH_PASSWORD", "admin"))
+    else:
+        username = os.getenv("AUTH_USER_USERNAME", "user")
+        password = os.getenv("AUTH_USER_PASSWORD", "user")
+    return username, password
+
+
 @router.post("/api/upload")
-async def upload_data(file: UploadFile = File(...)):
+async def upload_data(file: UploadFile = File(...), current_user: dict = Depends(require_role("user"))):
     contents = await file.read()
 
     # 1) Parse CSV
@@ -97,7 +116,7 @@ async def upload_data(file: UploadFile = File(...)):
 
 # Endpoint GET untuk memberikan data ke Frontend
 @router.get("/api/data")
-async def get_data():
+async def get_data(current_user: dict = Depends(require_role("admin"))):
     data = get_data_from_bq()
     total = len(data) if isinstance(data, list) else 0
     return {"status": "success", "total_records": total, "data": data}
@@ -105,7 +124,7 @@ async def get_data():
 
 # Endpoint ringan untuk cek kredensial GCP — hanya refresh token, tidak menjalankan query
 @router.get("/api/gcp-check")
-async def gcp_check():
+async def gcp_check(current_user: dict = Depends(require_role("admin"))):
     info = {"credentials_path": CREDENTIALS_PATH, "use_gcp": bool(USE_GCP), "project_id": PROJECT_ID}
     creds = get_credentials()
     if not creds:
@@ -120,3 +139,24 @@ async def gcp_check():
         return {"status": "success", "detail": "Credentials valid (token refreshed)", "service_account": sa_email, **info}
     except Exception as e:
         return {"status": "error", "detail": str(e), **info}
+
+
+# Simple login endpoint — gunakan ENV vars `AUTH_USERNAME` dan `AUTH_PASSWORD` untuk dev
+@router.post("/api/auth/login")
+async def login(req: Request):
+    body = await req.json()
+    username = body.get("username")
+    password = body.get("password")
+    role = body.get("role", "user")
+    if not username or not password:
+        raise HTTPException(status_code=400, detail="username and password required")
+
+    if role not in {"admin", "user"}:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    expected_user, expected_pass = _resolve_role_credentials(role)
+    if username == expected_user and password == expected_pass:
+        token = create_access_token(subject=username, role=role)
+        return {"access_token": token, "token_type": "bearer", "role": role, "username": username}
+
+    raise HTTPException(status_code=401, detail="Invalid credentials")

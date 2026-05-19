@@ -32,6 +32,41 @@ Dengan begitu, semua request bisa pakai `{{base_url}}`.
 
 ## 3. Testing endpoint `POST /api/upload`
 
+## Authentication (Login)
+
+Mulai versi dengan proteksi, beberapa endpoint memerlukan token Bearer dan role tertentu.
+
+1. Buat request `POST {{base_url}}/api/auth/login` dengan body JSON:
+
+```json
+{
+	"username": "admin",
+	"password": "admin",
+	"role": "admin"
+}
+```
+
+2. Jika sukses, response berisi `access_token`, `role`, dan `username`.
+
+3. Untuk role `user`, gunakan:
+
+```json
+{
+	"username": "user",
+	"password": "user",
+	"role": "user"
+}
+```
+
+4. Di Postman, di tab **Authorization** pilih **Bearer Token** dan masukkan token tersebut, atau tambahkan header manual:
+
+```
+Authorization: Bearer <access_token>
+```
+
+Catatan: Default credential lokal adalah `admin`/`admin` untuk dashboard dan `user`/`user` untuk upload data. Untuk production, set `AUTH_ADMIN_*`, `AUTH_USER_*`, dan `AUTH_SECRET_KEY` di environment server.
+
+
 Endpoint ini dipakai untuk upload file CSV, diproses oleh backend, lalu hasilnya dikirim ke pipeline/Data Warehouse.
 
 ### Langkah-langkah
