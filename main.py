@@ -1,5 +1,11 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+# Load env dari folder Back_end agar AUTH_* dan credential path terbaca konsisten
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 # Import router secara robust: dukung 3 skenario
 # 1) menjalankan dari root: `uvicorn Back_end.main:app`

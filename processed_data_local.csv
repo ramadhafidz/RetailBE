@@ -1,10 +1,1 @@
 product_id,product_name,price,stock,category,source_file,processed_at
-SRG-A01,Daging Ayam 1Kg,45000,20,Segar,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
-SRG-A02,Daging Sapi 1Kg,120000,15,Segar,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
-SRG-A03,Telur Ayam 1Kg,28000,50,Segar,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
-SRG-B01,Bawang Merah 1Kg,35000,40,Bumbu,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
-SRG-B02,Bawang Putih 1Kg,40000,35,Bumbu,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
-SRG-B03,Cabai Merah 1Kg,50000,0,Bumbu,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
-SRG-B04,Cabai Rawit 1Kg,60000,10,Bumbu,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
-SRG-C01,Sayur Bayam,3000,80,Sayuran,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00
-SRG-C02,Sayur Kangkung,3500,75,Sayuran,cabang_serang.csv,2026-05-14 16:18:31.206624+00:00

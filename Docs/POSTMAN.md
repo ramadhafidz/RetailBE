@@ -42,7 +42,6 @@ Mulai versi dengan proteksi, beberapa endpoint memerlukan token Bearer dan role 
 {
 	"username": "admin",
 	"password": "admin",
-	"role": "admin"
 }
 ```
 
@@ -54,7 +53,6 @@ Mulai versi dengan proteksi, beberapa endpoint memerlukan token Bearer dan role 
 {
 	"username": "user",
 	"password": "user",
-	"role": "user"
 }
 ```
 

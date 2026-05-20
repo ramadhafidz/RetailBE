@@ -147,16 +147,18 @@ async def login(req: Request):
     body = await req.json()
     username = body.get("username")
     password = body.get("password")
-    role = body.get("role", "user")
     if not username or not password:
         raise HTTPException(status_code=400, detail="username and password required")
 
-    if role not in {"admin", "user"}:
-        raise HTTPException(status_code=400, detail="Invalid role")
+    admin_user, admin_pass = _resolve_role_credentials("admin")
+    user_user, user_pass = _resolve_role_credentials("user")
 
-    expected_user, expected_pass = _resolve_role_credentials(role)
-    if username == expected_user and password == expected_pass:
-        token = create_access_token(subject=username, role=role)
-        return {"access_token": token, "token_type": "bearer", "role": role, "username": username}
+    if username == admin_user and password == admin_pass:
+        role = "admin"
+    elif username == user_user and password == user_pass:
+        role = "user"
+    else:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_access_token(subject=username, role=role)
+    return {"access_token": token, "token_type": "bearer", "role": role, "username": username}
