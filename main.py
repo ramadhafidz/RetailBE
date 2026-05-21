@@ -24,10 +24,15 @@ except Exception:
 
 app = FastAPI(title="Retail Backend API")
 
+# Ambil konfigurasi origin dari env var, default ke "*" jika tidak ada
+import os
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "*")
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+
 # Penting agar Frontend (yang berjalan di port beda) tidak ditolak oleh Backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=allowed_origins, 
     allow_methods=["*"],
     allow_headers=["*"],
 )
