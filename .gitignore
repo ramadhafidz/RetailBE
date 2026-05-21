@@ -1,2 +1,4 @@
 credential.json
 env/
+pyenv/
+.env
