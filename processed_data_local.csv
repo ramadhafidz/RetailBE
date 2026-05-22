@@ -1,1 +1,36 @@
-product_id,product_name,price,stock,category,source_file,processed_at
+product_id,product_name,price,stock,category,source_file,uploaded_by,processed_at
+JKT-001,Kopi Susu Gula Aren,18000,50,Minuman,stok_jkt_mei.csv,budi_jakarta,2026-05-22T08:16:24.240691
+JKT-002,Roti Bakar Coklat,15000,30,Makanan,stok_jkt_mei.csv,budi_jakarta,2026-05-22T08:16:24.240691
+JKT-003,Air Mineral 600ml,5000,120,Minuman,stok_jkt_mei.csv,budi_jakarta,2026-05-22T08:16:24.240691
+BDG-101,Keripik Kentang Original,12000,85,Snack,inventori_bdg_2026.csv,sari_bandung,2026-05-22T08:16:24.240691
+BDG-102,Mie Instan Goreng,3500,250,Makanan,inventori_bdg_2026.csv,sari_bandung,2026-05-22T08:16:24.240691
+SBY-501,Teh Pucuk Harum,6000,90,Minuman,data_barang_sby.csv,andi_surabaya,2026-05-22T08:16:24.240691
+SBY-502,Sabun Mandi Cair,25000,40,Kebutuhan Harian,data_barang_sby.csv,andi_surabaya,2026-05-22T08:16:24.241722
+SBY-503,Pasta Gigi,14000,60,Kebutuhan Harian,data_barang_sby.csv,andi_surabaya,2026-05-22T08:16:24.241722
+SRG-A01,Daging Ayam 1Kg,45000,20,Segar,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+SRG-A02,Daging Sapi 1Kg,120000,15,Segar,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+SRG-A03,Telur Ayam 1Kg,28000,50,Segar,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+SRG-B01,Bawang Merah 1Kg,35000,40,Bumbu,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+SRG-B02,Bawang Putih 1Kg,40000,35,Bumbu,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+SRG-B03,Cabai Merah 1Kg,50000,0,Bumbu,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+SRG-B04,Cabai Rawit 1Kg,60000,10,Bumbu,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+SRG-C01,Sayur Bayam,3000,80,Sayuran,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+SRG-C02,Sayur Kangkung,3500,75,Sayuran,cabang_serang.csv,user,2026-05-22 08:31:30.288835+00:00
+CLG-101,Sabun Cuci Piring,15000,50,Kebersihan,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+CLG-102,Pembersih Lantai,12000,30,Kebersihan,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+CLG-103,Pengharum Ruangan,18000,0,Kebersihan,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+CLG-104,Sikat Gigi,5000,100,Perawatan,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+CLG-106,Shampo Bayi,22500,25,Perawatan Bayi,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+CLG-107,Sabun Mandi Bayi,17000,40,Perawatan Bayi,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+CLG-108,Minyak Telon,25000,-2,Perawatan Bayi,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+CLG-109,Bedak Bayi,13500,60,Perawatan Bayi,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+CLG-110,Tisu Basah,15000,75,Perawatan Bayi,cabang_cilegon.csv,user,2026-05-22 08:32:10.520820+00:00
+JKT-001,Beras Premium 5Kg,64500,45,Food & Beverage,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00
+JKT-002,Minyak Goreng 2L,31500,12,Daily Needs,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00
+JKT-003,Sabun Mandi Cair,24000,80,Personal Care,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00
+JKT-004,Susu Uht 1L,18000,20,Food & Beverage,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00
+JKT-005,Roti Tawar,15000,15,Food & Beverage,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00
+JKT-007,Teh Botol 350Ml,5000,0,Beverage,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00
+JKT-008,Kopi Instan,3000,0,Beverage,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00
+JKT-009,Mie Goreng Ayam,3500,200,Food & Beverage,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00
+JKT-010,Sampo Anti Ketombe,25000,-5,Personal Care,cabang_jakarta.csv,user,2026-05-22 12:45:15.991578+00:00

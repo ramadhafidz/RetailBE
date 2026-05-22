@@ -56,6 +56,21 @@ def upload_file_to_gcs(file_bytes, filename):
         return False
 
 
+def _save_local_append(df):
+    import os
+    import pandas as pd
+    local_path = "processed_data_local.csv"
+    if os.path.exists(local_path):
+        try:
+            old_df = pd.read_csv(local_path)
+            combined_df = pd.concat([old_df, df], ignore_index=True)
+            combined_df.to_csv(local_path, index=False)
+        except Exception:
+            df.to_csv(local_path, index=False)
+    else:
+        df.to_csv(local_path, index=False)
+    print(f"✅ Data saved locally to {local_path} (appended)")
+
 def upload_dataframe_to_bq(df, table_id: str = None):
     """Upload pandas DataFrame ke BigQuery (optional, hanya jika credentials ada)
     
@@ -63,10 +78,7 @@ def upload_dataframe_to_bq(df, table_id: str = None):
     """
     if not USE_GCP:
         print(f"ℹ️ GCP tidak configured - saving data locally instead")
-        # Save locally sebagai fallback
-        local_path = "processed_data_local.csv"
-        df.to_csv(local_path, index=False)
-        print(f"✅ Data saved locally to {local_path}")
+        _save_local_append(df)
         return True
     
     try:
@@ -81,9 +93,7 @@ def upload_dataframe_to_bq(df, table_id: str = None):
     except Exception as e:
         print(f"⚠️ BigQuery upload failed: {e}")
         # Fallback: save locally
-        local_path = "processed_data_local.csv"
-        df.to_csv(local_path, index=False)
-        print(f"✅ Saved locally to {local_path} as fallback")
+        _save_local_append(df)
         return True
 
 def get_data_from_bq():
