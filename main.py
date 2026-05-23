@@ -4,6 +4,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
+from logger_config import setup_logger
+
+logger = setup_logger("main")
+
 # Load env dari folder Back_end agar AUTH_* dan credential path terbaca konsisten
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -40,6 +44,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
+    logger.info("Health check endpoint dipanggil")
     return {"message": "API berjalan"}
 
 

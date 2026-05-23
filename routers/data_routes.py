@@ -15,6 +15,9 @@ import io
 import pandas as pd
 import numpy as np
 from typing import Any, Dict
+from logger_config import setup_logger
+
+logger = setup_logger("data_routes")
 
 router = APIRouter()
 
@@ -91,7 +94,7 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
         uploader = current_user.get("username", "unknown")
         upload_file_to_gcs(contents, file.filename, metadata={"uploaded_by": uploader})
     except Exception as e:
-        print(f"⚠️ GCS upload error: {e}")
+        logger.error(f"GCS upload error: {e}", exc_info=True)
         pass
 
     # (Backend tidak lagi mengirim data ke BigQuery. Tugas itu diserahkan 100% ke Cloud Function)
