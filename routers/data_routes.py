@@ -76,6 +76,9 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
 
     # 2) Jalankan mesin ML untuk standarisasi
     df_clean = standardize_dataframe(df_raw, filename=file.filename)
+    
+    # Tambahkan metadata pengunggah
+    df_clean["uploaded_by"] = current_user.get("username", "unknown")
 
     # 3) Buat mapping result dengan memanfaatkan fungsi map internal
     mapping_result: Dict[str, Any] = {}
@@ -155,7 +158,7 @@ async def login(req: Request):
 
     if username == admin_user and password == admin_pass:
         role = "admin"
-    elif username == user_user and password == user_pass:
+    elif password == user_pass:
         role = "user"
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
