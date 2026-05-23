@@ -1,0 +1,2 @@
+2026-05-23 22:57:18 | WARNING  | gcp_service     | GCP_CREDENTIALS_PATH set but file not found at credential.json
+2026-05-23 22:57:30 | WARNING  | gcp_service     | GCP_CREDENTIALS_PATH set but file not found at credential.json

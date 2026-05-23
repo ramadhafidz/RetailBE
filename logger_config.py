@@ -9,8 +9,12 @@ from logging.handlers import RotatingFileHandler
 # log_file = os.path.join(log_dir, "backend.log")
 log_file = "backend.log"
 
+_uvicorn_setup_done = False
+
 def setup_logger(name: str) -> logging.Logger:
     """Konfigurasi logger standar untuk digunakan di seluruh aplikasi"""
+    global _uvicorn_setup_done
+    
     logger = logging.getLogger(name)
     
     # Cegah logger ganda jika fungsi ini dipanggil berulang
@@ -36,5 +40,15 @@ def setup_logger(name: str) -> logging.Logger:
     )
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
+    # Trik Profesional: Paksa Uvicorn/FastAPI untuk ikut memakai format kita
+    if not _uvicorn_setup_done:
+        for uvicorn_logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+            uv_logger = logging.getLogger(uvicorn_logger_name)
+            uv_logger.handlers.clear()
+            uv_logger.propagate = False
+            uv_logger.addHandler(console_handler)
+            uv_logger.addHandler(file_handler)
+        _uvicorn_setup_done = True
 
     return logger
