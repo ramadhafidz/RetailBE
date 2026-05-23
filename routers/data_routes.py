@@ -22,7 +22,7 @@ router = APIRouter()
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 ML_PATH = os.path.join(REPO_ROOT, "RetailML")
 if ML_PATH not in sys.path:
-    sys.path.insert(0, ML_PATH)
+    sys.path.append(ML_PATH)
 
 from column_mapper_lokal import standardize_dataframe
 import engine.column_mapper_core as core
