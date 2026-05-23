@@ -2,6 +2,11 @@ from google.cloud import storage, bigquery
 from google.oauth2 import service_account
 import os
 import json
+import pandas as pd
+from typing import List, Dict, Any
+
+from logger_config import setup_logger
+logger = setup_logger("gcp_service")
 
 # Cari credential dari env, atau file umum di folder kerja
 DEFAULT_CREDENTIAL_FILES = ["credentials.json", "credential.json"]
