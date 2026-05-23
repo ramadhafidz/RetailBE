@@ -46,7 +46,7 @@ def upload_file_to_gcs(file_bytes, filename):
     
     try:
         client = storage.Client(credentials=get_credentials(), project=PROJECT_ID)
-        bucket = client.bucket("retail-data-raw-493606")
+        bucket = client.bucket("retail-data-raw-izz")
         blob = bucket.blob(filename)
         blob.upload_from_string(file_bytes)
         print(f"✅ File {filename} uploaded to GCS")
