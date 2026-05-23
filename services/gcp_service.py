@@ -36,10 +36,11 @@ def get_credentials():
         return None
 
 def upload_file_to_gcs(file_bytes, filename, metadata: dict = None):
-    """Upload file ke GCS (optional, hanya jika credentials ada)"""
+    """Upload file ke GCS. Wajib berhasil agar Cloud Function terpanggil."""
     if not USE_GCP:
-        logger.warning(f"GCP tidak configured - skipping GCS upload untuk {filename}")
-        return True
+        error_msg = f"GCP tidak dikonfigurasi (credential tidak ditemukan). Upload {filename} dibatalkan."
+        logger.error(error_msg)
+        raise Exception(error_msg)
     
     try:
         client = storage.Client(credentials=get_credentials(), project=PROJECT_ID)

@@ -1,2 +1,25 @@
 2026-05-23 22:57:18 | WARNING  | gcp_service     | GCP_CREDENTIALS_PATH set but file not found at credential.json
 2026-05-23 22:57:30 | WARNING  | gcp_service     | GCP_CREDENTIALS_PATH set but file not found at credential.json
+2026-05-24 00:08:41 | WARNING  | gcp_service     | GCP_CREDENTIALS_PATH set but file not found at credential.json
+2026-05-24 00:08:44 | INFO     | uvicorn.error   | Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2026-05-24 00:08:44 | INFO     | uvicorn.error   | Started reloader process [26176] using StatReload
+2026-05-24 00:08:48 | WARNING  | gcp_service     | GCP_CREDENTIALS_PATH set but file not found at credential.json
+2026-05-24 00:08:51 | INFO     | uvicorn.error   | Started server process [27372]
+2026-05-24 00:08:51 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-24 00:08:51 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-24 00:09:29 | INFO     | uvicorn.access  | 127.0.0.1:63091 - "POST /api/auth/login HTTP/1.1" 200
+2026-05-24 00:13:40 | WARNING  | gcp_service     | GCP tidak configured - skipping GCS upload untuk cabang_tangerang.csv
+2026-05-24 00:13:40 | INFO     | uvicorn.access  | 127.0.0.1:57497 - "POST /api/upload HTTP/1.1" 200
+2026-05-24 00:38:10 | WARNING  | uvicorn.error   | StatReload detected changes in 'services\gcp_service.py'. Reloading...
+2026-05-24 00:38:10 | INFO     | uvicorn.error   | Shutting down
+2026-05-24 00:38:10 | INFO     | uvicorn.error   | Waiting for application shutdown.
+2026-05-24 00:38:10 | INFO     | uvicorn.error   | Application shutdown complete.
+2026-05-24 00:38:10 | INFO     | uvicorn.error   | Finished server process [27372]
+2026-05-24 00:38:15 | INFO     | uvicorn.error   | Started server process [1644]
+2026-05-24 00:38:15 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-24 00:38:15 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-24 00:38:19 | WARNING  | uvicorn.error   | StatReload detected changes in 'routers\data_routes.py'. Reloading...
+2026-05-24 00:38:19 | INFO     | uvicorn.error   | Shutting down
+2026-05-24 00:38:19 | INFO     | uvicorn.error   | Waiting for application shutdown.
+2026-05-24 00:38:19 | INFO     | uvicorn.error   | Application shutdown complete.
+2026-05-24 00:38:19 | INFO     | uvicorn.error   | Finished server process [1644]

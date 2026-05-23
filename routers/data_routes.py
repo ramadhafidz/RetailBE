@@ -95,7 +95,7 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
         upload_file_to_gcs(contents, file.filename, metadata={"uploaded_by": uploader})
     except Exception as e:
         logger.error(f"GCS upload error: {e}", exc_info=True)
-        pass
+        raise HTTPException(status_code=500, detail=f"Gagal mengirim file ke Cloud Storage: {str(e)}")
 
     # (Backend tidak lagi mengirim data ke BigQuery. Tugas itu diserahkan 100% ke Cloud Function)
 
