@@ -38,7 +38,7 @@ def get_credentials():
         print(f"⚠️ Warning: Tidak bisa load credentials - {e}")
         return None
 
-def upload_file_to_gcs(file_bytes, filename):
+def upload_file_to_gcs(file_bytes, filename, metadata: dict = None):
     """Upload file ke GCS (optional, hanya jika credentials ada)"""
     if not USE_GCP:
         print(f"ℹ️ GCP tidak configured - skipping GCS upload untuk {filename}")
@@ -48,6 +48,8 @@ def upload_file_to_gcs(file_bytes, filename):
         client = storage.Client(credentials=get_credentials(), project=PROJECT_ID)
         bucket = client.bucket("retail-data-raw-izz")
         blob = bucket.blob(filename)
+        if metadata:
+            blob.metadata = metadata
         blob.upload_from_string(file_bytes)
         print(f"✅ File {filename} uploaded to GCS")
         return True

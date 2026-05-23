@@ -68,17 +68,14 @@ def _resolve_role_credentials(role: str) -> tuple[str, str]:
 async def upload_data(file: UploadFile = File(...), current_user: dict = Depends(require_role("user"))):
     contents = await file.read()
 
-    # 1) Parse CSV
+    # 1) Parse CSV (Hanya 5 baris pertama untuk preview)
     try:
-        df_raw = pd.read_csv(io.BytesIO(contents))
+        df_raw = pd.read_csv(io.BytesIO(contents), nrows=5)
     except Exception:
         raise HTTPException(status_code=400, detail="Format CSV tidak terbaca")
 
-    # 2) Jalankan mesin ML untuk standarisasi
+    # 2) Jalankan mesin ML untuk standarisasi (hanya pada 5 baris)
     df_clean = standardize_dataframe(df_raw, filename=file.filename)
-    
-    # Tambahkan metadata pengunggah
-    df_clean["uploaded_by"] = current_user.get("username", "unknown")
 
     # 3) Buat mapping result dengan memanfaatkan fungsi map internal
     mapping_result: Dict[str, Any] = {}
@@ -89,19 +86,15 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
         except Exception:
             mapping_result[col] = None
 
-    # 4) Upload raw file ke GCS (arsip) dan upload cleaned data ke BigQuery
+    # 4) Upload raw file ke GCS beserta metadatanya agar diolah oleh Cloud Function
     try:
-        upload_file_to_gcs(contents, file.filename)
+        uploader = current_user.get("username", "unknown")
+        upload_file_to_gcs(contents, file.filename, metadata={"uploaded_by": uploader})
     except Exception as e:
         print(f"⚠️ GCS upload error: {e}")
         pass
 
-    try:
-        upload_dataframe_to_bq(df_clean)
-    except Exception as e:
-        print(f"⚠️ BigQuery upload error: {e}")
-        # Jangan fail di sini - lanjutkan dengan local fallback
-        pass
+    # (Backend tidak lagi mengirim data ke BigQuery. Tugas itu diserahkan 100% ke Cloud Function)
 
     # 5) Siapkan response sesuai API_CONTRACT
     metadata = {"total_rows_processed": int(len(df_raw)), "source_file": file.filename}
