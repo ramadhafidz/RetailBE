@@ -69,26 +69,25 @@ Klik **Send**.
 
 ---
 
-## 🕵️‍♂️ Langkah 3: Verifikasi Cloud Function (GCP)
-Apakah Cloud Function Anda benar-benar berjalan? Mari kita buktikan:
+## 🕵️‍♂️ Langkah 3: Cara Melacak Data (Tracing End-to-End)
 
-1. Buka Dasbor Google Cloud, cari **Cloud Run**, dan pilih fungsi **`retail-ml-engine`** Anda.
-2. Buka tab **Logs** (Log).
-3. Jika *setup* berhasil, Anda akan melihat log baru yang muncul tepat pada detik yang sama saat Anda menekan tombol *Send* di Postman. Log tersebut akan membuktikan bahwa fungsi ML Anda terbangun dan memproses CSV yang diunggah oleh Backend.
+Setelah Anda menekan tombol *Send* di Postman pada Endpoint `/api/upload` dan mendapat balasan "success", Anda bisa melacak perjalanan asinkron data Anda langsung di Dasbor Google Cloud:
 
----
+### A. Cek Google Cloud Storage (Bucket)
+1. Buka [Cloud Storage Buckets](https://console.cloud.google.com/storage/browser).
+2. Klik bucket **`retail-data-raw-izz`**.
+3. Anda akan melihat file CSV mentah Anda di sana! Jika Anda mengeklik file tersebut dan menggulir ke bagian bawah, Anda akan melihat **Custom Metadata** berisi `{"uploaded_by": "user"}` yang dititipkan oleh Backend.
 
-## 📥 Langkah 4: Cek Data Warehouse (Opsional)
-Jika Anda ingin melihat apakah data sudah bersih dan masuk ke BigQuery:
+### B. Cek Google Cloud Functions (ML Engine)
+1. Buka [Cloud Run Services](https://console.cloud.google.com/run) (karena fungsi Anda berbasis Gen 2).
+2. Klik layanan **`retail-ml-engine`**, lalu buka tab **Logs**.
+3. Cari *log* yang waktunya bersamaan dengan saat Anda menekan tombol di Postman. Anda akan melihat *log* proses mesin ML Anda berteriak: *"Ada file baru masuk!"* dan *"Mengirim data bersih ke BigQuery..."*. Ini membuktikan *Eventarc Trigger* bekerja sempurna!
 
-1. Lakukan **Langkah 1** ulang, tapi kali ini ubah JSON-nya menjadi:
-   ```json
-   {
-       "username": "admin",
-       "password": "admin"
-   }
+### C. Cek BigQuery (Data Warehouse)
+1. Buka [BigQuery SQL Workspace](https://console.cloud.google.com/bigquery).
+2. Di panel penjelajah sebelah kiri, cari *Project* Anda, rentangkan dataset `retail_warehouse`, dan klik tabel `integrated_retail_data`.
+3. Buka tab **Preview** (Pratinjau) atau jalankan perintah SQL ini:
+   ```sql
+   SELECT * FROM `datawarehouse-493606.retail_warehouse.integrated_retail_data` LIMIT 10
    ```
-2. Salin token admin tersebut.
-3. Buat Request baru dengan **Method**: `GET`, **URL**: `http://localhost:8000/api/data`
-4. Masukkan token admin di tab Authorization (Bearer Token).
-5. Klik **Send**. Anda akan melihat tumpukan data bersih yang diambil langsung dari BigQuery!
+4. **Selesai!** Data CSV yang tadinya berantakan sekarang sudah rapi, terstandarisasi, dan siap dikonsumsi. Jangan lupa untuk mengecek apakah kolom `uploaded_by` sudah terisi dengan benar!
