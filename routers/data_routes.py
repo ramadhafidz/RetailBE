@@ -18,9 +18,9 @@ from typing import Any, Dict
 
 router = APIRouter()
 
-# Tambahkan path ke folder Machine_Learning agar kita bisa memanggil engine
+# Tambahkan path ke folder Machine_Learning (RetailML) agar kita bisa memanggil engine untuk preview
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-ML_PATH = os.path.join(REPO_ROOT, "Machine_Learning")
+ML_PATH = os.path.join(REPO_ROOT, "RetailML")
 if ML_PATH not in sys.path:
     sys.path.insert(0, ML_PATH)
 
