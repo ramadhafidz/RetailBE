@@ -108,3 +108,8 @@ google.auth.exceptions.DefaultCredentialsError: File credential.json was not fou
 2026-05-24 01:44:21 | INFO     | uvicorn.error   | Waiting for application shutdown.
 2026-05-24 01:44:21 | INFO     | uvicorn.error   | Application shutdown complete.
 2026-05-24 01:44:21 | INFO     | uvicorn.error   | Finished server process [11404]
+2026-05-24 01:44:25 | INFO     | uvicorn.error   | Started server process [15828]
+2026-05-24 01:44:25 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-24 01:44:25 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-24 01:45:33 | INFO     | gcp_service     | Data fetched from BigQuery
+2026-05-24 01:45:33 | INFO     | uvicorn.access  | 127.0.0.1:55984 - "GET /api/data HTTP/1.1" 200
