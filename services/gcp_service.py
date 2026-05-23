@@ -108,4 +108,5 @@ def get_data_from_bq(limit=100) -> List[Dict[str, Any]]:
         logger.info("Data fetched from BigQuery")
         return [dict(row) for row in results]
     except Exception as e:
-            return []
+        logger.error(f"Failed to fetch data from BigQuery: {e}", exc_info=True)
+        return []

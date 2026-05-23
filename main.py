@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
@@ -27,6 +28,14 @@ except Exception:
         from .routers import data_routes
 
 app = FastAPI(title="Retail Backend API")
+
+# Custom Exception Handler agar error JWT/Auth terlihat bagus dan seragam
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"status": "error", "message": str(exc.detail)}
+    )
 
 # Ambil konfigurasi origin dari env var, default ke "*" jika tidak ada
 import os

@@ -23,3 +23,88 @@
 2026-05-24 00:38:19 | INFO     | uvicorn.error   | Waiting for application shutdown.
 2026-05-24 00:38:19 | INFO     | uvicorn.error   | Application shutdown complete.
 2026-05-24 00:38:19 | INFO     | uvicorn.error   | Finished server process [1644]
+2026-05-24 00:38:23 | INFO     | uvicorn.error   | Started server process [16992]
+2026-05-24 00:38:23 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-24 00:38:23 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-24 00:39:39 | ERROR    | gcp_service     | Tidak bisa load credentials - [Errno 2] No such file or directory: 'credential.json'
+2026-05-24 00:39:39 | ERROR    | gcp_service     | GCS upload failed: File credential.json was not found.
+2026-05-24 00:39:39 | ERROR    | data_routes     | GCS upload error: File credential.json was not found.
+Traceback (most recent call last):
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\routers\data_routes.py", line 95, in upload_data
+    upload_file_to_gcs(contents, file.filename, metadata={"uploaded_by": uploader})
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\services\gcp_service.py", line 56, in upload_file_to_gcs
+    raise e
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\services\gcp_service.py", line 46, in upload_file_to_gcs
+    client = storage.Client(credentials=get_credentials(), project=PROJECT_ID)
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\pyenv\Lib\site-packages\google\cloud\storage\client.py", line 265, in __init__
+    super(Client, self).__init__(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        project=project,
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        _http=_http,
+        ^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\pyenv\Lib\site-packages\google\cloud\client\__init__.py", line 340, in __init__
+    Client.__init__(
+    ~~~~~~~~~~~~~~~^
+        self, credentials=credentials, client_options=client_options, _http=_http
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\pyenv\Lib\site-packages\google\cloud\client\__init__.py", line 197, in __init__
+    credentials, _ = google.auth.default(scopes=scopes)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\pyenv\Lib\site-packages\google\auth\_default.py", line 714, in default
+    credentials, project_id = checker()
+                              ~~~~~~~^^
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\pyenv\Lib\site-packages\google\auth\_default.py", line 707, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\pyenv\Lib\site-packages\google\auth\_default.py", line 352, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        os.environ[environment_vars.CREDENTIALS],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        quota_project_id=quota_project_id,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Hafidz\OneDrive\Documents\CodeRoots\retail-dashboard\RetailBE\pyenv\Lib\site-packages\google\auth\_default.py", line 178, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+        "File {} was not found.".format(filename)
+    )
+google.auth.exceptions.DefaultCredentialsError: File credential.json was not found.
+2026-05-24 00:39:39 | INFO     | uvicorn.access  | 127.0.0.1:54254 - "POST /api/upload HTTP/1.1" 500
+2026-05-24 00:40:53 | INFO     | gcp_service     | File cabang_tangerang.csv uploaded to GCS
+2026-05-24 00:40:53 | INFO     | uvicorn.access  | 127.0.0.1:54644 - "POST /api/upload HTTP/1.1" 200
+2026-05-24 00:55:06 | INFO     | gcp_service     | File cabang_tangerang.csv uploaded to GCS
+2026-05-24 00:55:06 | INFO     | uvicorn.access  | 127.0.0.1:62831 - "POST /api/upload HTTP/1.1" 200
+2026-05-24 01:01:26 | INFO     | gcp_service     | File cabang_tangerang.csv uploaded to GCS
+2026-05-24 01:01:26 | INFO     | uvicorn.access  | 127.0.0.1:52749 - "POST /api/upload HTTP/1.1" 200
+2026-05-24 01:03:18 | INFO     | gcp_service     | File cabang_tangerang.csv uploaded to GCS
+2026-05-24 01:03:18 | INFO     | uvicorn.access  | 127.0.0.1:54427 - "POST /api/upload HTTP/1.1" 200
+2026-05-24 01:10:19 | INFO     | uvicorn.access  | 127.0.0.1:51234 - "POST /api/upload HTTP/1.1" 401
+2026-05-24 01:33:15 | INFO     | uvicorn.access  | 127.0.0.1:56541 - "POST /api/auth/login HTTP/1.1" 200
+2026-05-24 01:33:28 | INFO     | gcp_service     | File cabang_tangerang.csv uploaded to GCS
+2026-05-24 01:33:28 | INFO     | uvicorn.access  | 127.0.0.1:56545 - "POST /api/upload HTTP/1.1" 200
+2026-05-24 01:36:50 | INFO     | gcp_service     | File cabang_tangerang.csv uploaded to GCS
+2026-05-24 01:36:50 | INFO     | uvicorn.access  | 127.0.0.1:51988 - "POST /api/upload HTTP/1.1" 200
+2026-05-24 01:41:00 | INFO     | uvicorn.access  | 127.0.0.1:57301 - "GET /api/data HTTP/1.1" 403
+2026-05-24 01:41:26 | INFO     | uvicorn.access  | 127.0.0.1:51332 - "POST /api/auth/login HTTP/1.1" 200
+2026-05-24 01:41:50 | INFO     | uvicorn.access  | 127.0.0.1:56231 - "GET /api/data HTTP/1.1" 200
+2026-05-24 01:44:13 | WARNING  | uvicorn.error   | StatReload detected changes in 'main.py'. Reloading...
+2026-05-24 01:44:13 | INFO     | uvicorn.error   | Shutting down
+2026-05-24 01:44:13 | INFO     | uvicorn.error   | Waiting for application shutdown.
+2026-05-24 01:44:13 | INFO     | uvicorn.error   | Application shutdown complete.
+2026-05-24 01:44:13 | INFO     | uvicorn.error   | Finished server process [16992]
+2026-05-24 01:44:19 | INFO     | uvicorn.error   | Started server process [11404]
+2026-05-24 01:44:19 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-24 01:44:19 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-24 01:44:20 | WARNING  | uvicorn.error   | StatReload detected changes in 'services\gcp_service.py'. Reloading...
+2026-05-24 01:44:21 | INFO     | uvicorn.error   | Shutting down
+2026-05-24 01:44:21 | INFO     | uvicorn.error   | Waiting for application shutdown.
+2026-05-24 01:44:21 | INFO     | uvicorn.error   | Application shutdown complete.
+2026-05-24 01:44:21 | INFO     | uvicorn.error   | Finished server process [11404]
