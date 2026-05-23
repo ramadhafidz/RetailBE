@@ -2,3 +2,7 @@ fastapi
 uvicorn
 PyJWT
 python-dotenv
+google-cloud-storage
+google-cloud-bigquery
+pandas
+python-multipart
