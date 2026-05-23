@@ -97,8 +97,12 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
     # (Backend tidak lagi mengirim data ke BigQuery. Tugas itu diserahkan 100% ke Cloud Function)
 
     # 5) Siapkan response sesuai API_CONTRACT
-    metadata = {"total_rows_processed": int(len(df_raw)), "source_file": file.filename}
-    preview_data_raw = df_clean.head(1).to_dict(orient="records")
+    # Hitung jumlah baris asli berdasarkan karakter newline (dikurangi 1 untuk header)
+    total_lines = contents.count(b'\n')
+    actual_rows = total_lines - 1 if total_lines > 0 else 0
+    
+    metadata = {"total_rows_processed": actual_rows, "source_file": file.filename}
+    preview_data_raw = df_clean.to_dict(orient="records") # Kembalikan seluruh 5 baris preview
     preview_data = [_sanitize_record(r) for r in preview_data_raw]
 
     return {
