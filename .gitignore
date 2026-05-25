@@ -3,3 +3,4 @@ env/
 pyenv/
 .env
 backend.log
+.agents/
