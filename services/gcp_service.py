@@ -102,7 +102,8 @@ def get_data_from_bq(limit=100) -> List[Dict[str, Any]]:
             
     try:
         client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
-        query = f"SELECT * FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` LIMIT {limit}"
+        # Menggunakan _latest view untuk mencegah pengiriman data duplikat ke Frontend
+        query = f"SELECT * FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data_latest` LIMIT {limit}"
         query_job = client.query(query)
         results = query_job.result()
         logger.info("Data fetched from BigQuery")
