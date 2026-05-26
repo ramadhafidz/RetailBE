@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request, Response
 from services.gcp_service import (
     upload_file_to_gcs,
     get_data_from_bq,
@@ -128,10 +128,19 @@ async def get_data(current_user: dict = Depends(require_role("admin"))):
 
 # Endpoint DELETE untuk menghapus data secara permanen dari BigQuery (Hanya Admin)
 @router.delete("/api/data/{product_id}")
-async def delete_data(product_id: str, current_user: dict = Depends(require_role("admin"))):
+async def delete_data(product_id: str, response: Response, current_user: dict = Depends(require_role("admin"))):
     try:
         result = delete_data_from_bq(product_id)
         if result["success"]:
+            if result["affected_rows"] == 0:
+                response.status_code = 404
+                return {
+                    "status": "not_found",
+                    "message": f"Tidak ada data dengan product_id '{product_id}' yang ditemukan untuk dihapus.",
+                    "deleted_count": 0,
+                    "deleted_items": []
+                }
+            
             return {
                 "status": "success", 
                 "message": f"Berhasil menghapus {result['affected_rows']} baris data dengan product_id '{product_id}' secara permanen.",
