@@ -197,17 +197,18 @@ async def login(req: Request):
 
     admin_user, admin_pass = _resolve_role_credentials("admin")
 
-    VALID_USERS = {
-        "hapis": "hapis123",
-        "ismet": "ismet123",
-        "udin": "udin123",
-        "rindra": "rindra123",
-        "fikri": "fikri123"
-    }
+    # Baca daftar user dari env
+    users_env = os.getenv("AUTH_WARUNG_USERS", "")
+    valid_users = {}
+    if users_env:
+        for pair in users_env.split(","):
+            if ":" in pair:
+                k, v = pair.split(":", 1)
+                valid_users[k.strip().lower()] = v.strip()
 
     if username == admin_user and password == admin_pass:
         role = "admin"
-    elif username.lower() in VALID_USERS and password == VALID_USERS[username.lower()]:
+    elif username.lower() in valid_users and password == valid_users[username.lower()]:
         role = "user"
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
