@@ -1,5 +1,8 @@
 name: Deploy Backend to Home Server (Tailscale)
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 on:
   push:
     branches:
@@ -41,7 +44,7 @@ jobs:
             echo "🚀 Memulai Deployment Backend..."
             
             # Pindah ke direktori project (pastikan Anda sudah melakukan 'git clone' sebelumnya di server)
-            cd ~/app/RetailBE || { echo "Direktori ~/RetailBE tidak ditemukan! Lakukan git clone terlebih dahulu."; exit 1; }
+            cd ~/app/RetailBE || { echo "Direktori ~/app/RetailBE tidak ditemukan! Lakukan git clone terlebih dahulu."; exit 1; }
             
             # Tarik pembaruan terbaru dari GitHub
             git pull origin main
