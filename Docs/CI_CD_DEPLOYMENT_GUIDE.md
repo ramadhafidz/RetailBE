@@ -8,7 +8,35 @@ Karena skrip ini akan melakukan SSH ke server Anda dan mengeksekusi `docker comp
 
 **Catatan Penting:** Repositori ML (`RetailML`) akan secara otomatis di-clone dan dimasukkan ke dalam Docker container Backend saat proses build berlangsung. Oleh karena itu, Anda **TIDAK PERLU** melakukan clone repositori ML secara manual di server rumah Anda.
 
-1. Buka terminal server Debian Anda via SSH.
+### Menyiapkan Akses SSH untuk CI/CD (User `datawarehousing`)
+
+Agar GitHub Actions dapat mengakses server dengan aman, kita akan menggunakan user `datawarehousing` dan membuat kunci SSH khusus.
+
+1. Login ke server sebagai root atau user Anda, lalu pindah ke user baru:
+   ```bash
+   su - datawarehousing
+   ```
+2. Buat direktori SSH:
+   ```bash
+   mkdir -p ~/.ssh && chmod 700 ~/.ssh
+   ```
+3. Buat kunci SSH khusus CI/CD:
+   ```bash
+   ssh-keygen -t ed25519 -f ~/.ssh/github_action_key -N ""
+   ```
+4. Masukkan public key ke daftar yang diizinkan:
+   ```bash
+   cat ~/.ssh/github_action_key.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+   ```
+5. Tampilkan private key:
+   ```bash
+   cat ~/.ssh/github_action_key
+   ```
+   Salin seluruh isi private key tersebut untuk dimasukkan ke rahasia `SSH_PRIVATE_KEY` di GitHub pada langkah selanjutnya.
+
+### Menyiapkan Repositori
+
+1. Buka terminal server Debian Anda via SSH dan pastikan Anda login sebagai user `datawarehousing`.
 2. Lakukan _Clone_ repositori ini di _home directory_ Anda:
    ```bash
    cd ~
@@ -46,8 +74,8 @@ Agar robot GitHub bisa menumpang masuk ke jaringan Tailscale Anda dengan aman, A
 4. Tambahkan rahasia-rahasia berikut secara berurutan:
    - **`TS_OAUTH_CLIENT_ID`**: Masukkan _Client ID_ dari Tailscale.
    - **`TS_OAUTH_SECRET`**: Masukkan _Client Secret_ dari Tailscale.
-   - **`SSH_USERNAME`**: Masukkan nama user Debian Anda, yaitu: `ramadhafidz`.
-   - **`SSH_PRIVATE_KEY`**: Masukkan _Private Key_ SSH Anda (yang berpasangan dengan public key `~/.ssh/authorized_keys` di server Debian Anda). Jika Anda belum punya, Anda harus membuat SSH key pair baru menggunakan `ssh-keygen` di laptop Anda, salin _public key_-nya ke `~/.ssh/authorized_keys` di Debian, lalu tempel _private key_-nya (biasanya dari file `id_rsa`) ke rahasia GitHub ini.
+   - **`SSH_USERNAME`**: Masukkan nama user Debian Anda, yaitu: `datawarehousing`.
+   - **`SSH_PRIVATE_KEY`**: Masukkan _Private Key_ SSH khusus yang sudah Anda buat sebelumnya (hasil dari `cat ~/.ssh/github_action_key` di Langkah 1).
 
 ## Langkah 4: Pengujian
 
