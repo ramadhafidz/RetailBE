@@ -113,3 +113,46 @@ google.auth.exceptions.DefaultCredentialsError: File credential.json was not fou
 2026-05-24 01:44:25 | INFO     | uvicorn.error   | Application startup complete.
 2026-05-24 01:45:33 | INFO     | gcp_service     | Data fetched from BigQuery
 2026-05-24 01:45:33 | INFO     | uvicorn.access  | 127.0.0.1:55984 - "GET /api/data HTTP/1.1" 200
+2026-05-26 15:15:41 | INFO     | uvicorn.error   | Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2026-05-26 15:15:41 | INFO     | uvicorn.error   | Started reloader process [284] using StatReload
+2026-05-26 15:15:45 | INFO     | uvicorn.error   | Started server process [34436]
+2026-05-26 15:15:45 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-26 15:15:45 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-26 15:17:24 | INFO     | uvicorn.access  | 127.0.0.1:64684 - "POST /api/auth/login HTTP/1.1" 200
+2026-05-26 15:20:05 | WARNING  | uvicorn.error   | StatReload detected changes in 'logger_config.py'. Reloading...
+2026-05-26 15:20:05 | INFO     | uvicorn.error   | Shutting down
+2026-05-26 15:20:05 | INFO     | uvicorn.error   | Waiting for application shutdown.
+2026-05-26 15:20:05 | INFO     | uvicorn.error   | Application shutdown complete.
+2026-05-26 15:20:05 | INFO     | uvicorn.error   | Finished server process [34436]
+2026-05-26 15:20:13 | INFO     | uvicorn.error   | Started server process [54368]
+2026-05-26 15:20:13 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-26 15:20:13 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-26 15:20:13 | INFO     | uvicorn.error   | Shutting down
+2026-05-26 15:20:13 | INFO     | uvicorn.error   | Waiting for application shutdown.
+2026-05-26 15:20:13 | INFO     | uvicorn.error   | Application shutdown complete.
+2026-05-26 15:20:13 | INFO     | uvicorn.error   | Finished server process [54368]
+2026-05-26 15:20:14 | INFO     | uvicorn.error   | Stopping reloader process [284]
+2026-05-26 15:20:34 | INFO     | uvicorn.error   | Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2026-05-26 15:20:34 | INFO     | uvicorn.error   | Started reloader process [58048] using StatReload
+2026-05-26 15:20:38 | INFO     | uvicorn.error   | Started server process [32028]
+2026-05-26 15:20:38 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-26 15:20:38 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-26 15:20:54 | INFO     | uvicorn.access  | 127.0.0.1:50866 - "POST /api/auth/login HTTP/1.1" 200
+2026-05-26 15:21:13 | INFO     | gcp_service     | File cabang_tangerang.csv uploaded to GCS
+2026-05-26 15:21:13 | INFO     | uvicorn.access  | 127.0.0.1:50884 - "POST /api/upload HTTP/1.1" 200
+2026-05-26 15:21:25 | INFO     | uvicorn.access  | 127.0.0.1:50904 - "POST /api/auth/login HTTP/1.1" 200
+2026-05-26 15:21:41 | INFO     | gcp_service     | Data fetched from BigQuery
+2026-05-26 15:21:42 | INFO     | uvicorn.access  | 127.0.0.1:50906 - "GET /api/data HTTP/1.1" 200
+2026-05-26 15:26:23 | WARNING  | uvicorn.error   | StatReload detected changes in 'services\gcp_service.py'. Reloading...
+2026-05-26 15:26:23 | INFO     | uvicorn.error   | Shutting down
+2026-05-26 15:26:23 | INFO     | uvicorn.error   | Waiting for application shutdown.
+2026-05-26 15:26:23 | INFO     | uvicorn.error   | Application shutdown complete.
+2026-05-26 15:26:23 | INFO     | uvicorn.error   | Finished server process [32028]
+2026-05-26 15:26:28 | INFO     | uvicorn.error   | Started server process [44056]
+2026-05-26 15:26:28 | INFO     | uvicorn.error   | Waiting for application startup.
+2026-05-26 15:26:28 | INFO     | uvicorn.error   | Application startup complete.
+2026-05-26 15:26:32 | WARNING  | uvicorn.error   | StatReload detected changes in 'routers\data_routes.py'. Reloading...
+2026-05-26 15:26:32 | INFO     | uvicorn.error   | Shutting down
+2026-05-26 15:26:32 | INFO     | uvicorn.error   | Waiting for application shutdown.
+2026-05-26 15:26:32 | INFO     | uvicorn.error   | Application shutdown complete.
+2026-05-26 15:26:32 | INFO     | uvicorn.error   | Finished server process [44056]

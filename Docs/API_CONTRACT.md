@@ -72,3 +72,27 @@ Dokumen ini mendefinisikan struktur Request dan Response antara antarmuka React 
   ]
 }
 ```
+
+## 3. Delete Data (Admin Only)
+**Endpoint:** `DELETE /api/data/{product_id}`
+**Description:** Menghapus sebuah barang secara permanen (*Hard Delete*) dari BigQuery. Untuk menghapus data pengujian yang gagal (dimana `product_id` adalah *null*), gunakan string `"null"` sebagai `{product_id}`.
+
+**Request:** (No Body)
+- URL Parameter: `product_id` (contoh: `TGR-01` atau `null`)
+- Header: `Authorization: Bearer <Admin_JWT_Token>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "Data dengan product_id 'null' berhasil dihapus secara permanen."
+}
+```
+
+**Response (403 Forbidden - Jika bukan Admin):**
+```json
+{
+  "status": "error",
+  "message": "Forbidden for this role"
+}
+```

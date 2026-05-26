@@ -3,6 +3,7 @@ from services.gcp_service import (
     upload_file_to_gcs,
     get_data_from_bq,
     upload_dataframe_to_bq,
+    delete_data_from_bq,
     get_credentials,
     CREDENTIALS_PATH,
     PROJECT_ID,
@@ -123,6 +124,17 @@ async def get_data(current_user: dict = Depends(require_role("admin"))):
     data = get_data_from_bq()
     total = len(data) if isinstance(data, list) else 0
     return {"status": "success", "total_records": total, "data": data}
+
+
+# Endpoint DELETE untuk menghapus data secara permanen dari BigQuery (Hanya Admin)
+@router.delete("/api/data/{product_id}")
+async def delete_data(product_id: str, current_user: dict = Depends(require_role("admin"))):
+    try:
+        success = delete_data_from_bq(product_id)
+        if success:
+            return {"status": "success", "message": f"Data dengan product_id '{product_id}' berhasil dihapus secara permanen."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal menghapus data: {str(e)}")
 
 
 # Endpoint ringan untuk cek kredensial GCP — hanya refresh token, tidak menjalankan query

@@ -111,3 +111,33 @@ def get_data_from_bq(limit=100) -> List[Dict[str, Any]]:
     except Exception as e:
         logger.error(f"Failed to fetch data from BigQuery: {e}", exc_info=True)
         return []
+
+def delete_data_from_bq(product_id: str) -> bool:
+    """Hapus data permanen dari BigQuery berdasarkan product_id (Hard Delete)"""
+    if not USE_GCP or get_credentials() is None:
+        logger.error("GCP tidak dikonfigurasi, tidak dapat menghapus data.")
+        raise Exception("GCP credentials not available")
+        
+    try:
+        client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
+        
+        # Penanganan khusus untuk menghapus data testing masa lampau yang tidak memiliki product_id
+        if product_id.lower() == "null":
+            query = f"DELETE FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id IS NULL"
+        else:
+            query = f"DELETE FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id = @product_id"
+            
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("product_id", "STRING", product_id)
+            ]
+        )
+        
+        query_job = client.query(query, job_config=job_config)
+        query_job.result()  # Tunggu eksekusi selesai
+        
+        logger.info(f"Data with product_id={product_id} deleted from BigQuery")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to delete data from BigQuery: {e}", exc_info=True)
+        raise e

@@ -23,22 +23,50 @@ def setup_logger(name: str) -> logging.Logger:
 
     logger.setLevel(logging.INFO)
 
-    # Format log: [WAKTU] | [LEVEL] | [NAMA_MODUL] - [PESAN]
-    formatter = logging.Formatter(
+    class ColorFormatter(logging.Formatter):
+        """Formatter kustom untuk menambahkan warna ANSI di Terminal"""
+        GREEN = "\033[92m"
+        BLUE = "\033[94m"
+        YELLOW = "\033[93m"
+        RED = "\033[91m"
+        BOLD_RED = "\033[1;31m"
+        CYAN = "\033[96m"
+        RESET = "\033[0m"
+
+        def format(self, record):
+            level_color = self.RESET
+            if record.levelno == logging.DEBUG:
+                level_color = self.CYAN
+            elif record.levelno == logging.INFO:
+                level_color = self.GREEN
+            elif record.levelno == logging.WARNING:
+                level_color = self.YELLOW
+            elif record.levelno == logging.ERROR:
+                level_color = self.RED
+            elif record.levelno == logging.CRITICAL:
+                level_color = self.BOLD_RED
+
+            # Format: [WAKTU] | [LEVEL] berwarna | [MODUL] biru | [PESAN]
+            format_str = f"{self.CYAN}%(asctime)s{self.RESET} | {level_color}%(levelname)-8s{self.RESET} | {self.BLUE}%(name)-15s{self.RESET} | %(message)s"
+            formatter = logging.Formatter(format_str, datefmt="%Y-%m-%d %H:%M:%S")
+            return formatter.format(record)
+
+    # Format polos untuk File
+    file_formatter = logging.Formatter(
         "%(asctime)s | %(levelname)-8s | %(name)-15s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-    # Handler 1: Terminal (Console)
+    # Handler 1: Terminal (Console) dengan Warna
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
+    console_handler.setFormatter(ColorFormatter())
     logger.addHandler(console_handler)
 
-    # Handler 2: File (Rotating File Handler agar file tidak bengkak)
+    # Handler 2: File (Rotasi) tanpa Warna
     file_handler = RotatingFileHandler(
         log_file, maxBytes=5 * 1024 * 1024, backupCount=2, encoding="utf-8"
     )
-    file_handler.setFormatter(formatter)
+    file_handler.setFormatter(file_formatter)
     logger.addHandler(file_handler)
 
     # Trik Profesional: Paksa Uvicorn/FastAPI untuk ikut memakai format kita
