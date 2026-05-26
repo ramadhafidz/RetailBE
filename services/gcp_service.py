@@ -85,7 +85,7 @@ def upload_dataframe_to_bq(df: pd.DataFrame):
         logger.error(f"BigQuery upload failed: {e}")
         raise e
 
-def get_data_from_bq(limit=100) -> List[Dict[str, Any]]:
+def get_data_from_bq(limit=100, offset=0) -> List[Dict[str, Any]]:
     """Fallback mengambil data dari lokal CSV jika GCP tidak disetup"""
     
     if not USE_GCP or get_credentials() is None:
@@ -94,7 +94,7 @@ def get_data_from_bq(limit=100) -> List[Dict[str, Any]]:
             local_path = "processed_data_local.csv"
             if os.path.exists(local_path):
                 df = pd.read_csv(local_path)
-                return df.tail(limit).to_dict(orient="records")
+                return df.iloc[offset:offset+limit].to_dict(orient="records")
             logger.warning("Tidak ada local data file - returning empty list")
             return []
         except Exception:
@@ -103,7 +103,7 @@ def get_data_from_bq(limit=100) -> List[Dict[str, Any]]:
     try:
         client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
         # Menggunakan _latest view untuk mencegah pengiriman data duplikat ke Frontend
-        query = f"SELECT * FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data_latest` LIMIT {limit}"
+        query = f"SELECT * FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data_latest` LIMIT {limit} OFFSET {offset}"
         query_job = client.query(query)
         results = query_job.result()
         logger.info("Data fetched from BigQuery")

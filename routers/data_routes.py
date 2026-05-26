@@ -134,10 +134,17 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
 
 # Endpoint GET untuk memberikan data ke Frontend
 @router.get("/api/data")
-async def get_data(limit: int = 1000, current_user: dict = Depends(require_role("admin"))):
-    data = get_data_from_bq(limit=limit)
+async def get_data(page: int = 1, page_size: int = 100, current_user: dict = Depends(require_role("admin"))):
+    offset = (page - 1) * page_size
+    data = get_data_from_bq(limit=page_size, offset=offset)
     total = len(data) if isinstance(data, list) else 0
-    return {"status": "success", "total_records": total, "data": data}
+    return {
+        "status": "success", 
+        "page": page,
+        "page_size": page_size,
+        "total_records_fetched": total, 
+        "data": data
+    }
 
 
 # Endpoint DELETE untuk menghapus data secara permanen dari BigQuery (Hanya Admin)
