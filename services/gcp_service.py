@@ -2,6 +2,11 @@ from google.cloud import storage, bigquery
 from google.oauth2 import service_account
 import os
 import json
+import pandas as pd
+from typing import List, Dict, Any
+
+from logger_config import setup_logger
+logger = setup_logger("gcp_service")
 
 # Cari credential dari env, atau file umum di folder kerja
 DEFAULT_CREDENTIAL_FILES = ["credentials.json", "credential.json"]
@@ -15,114 +20,142 @@ else:
 PROJECT_ID = "datawarehouse-493606"
 USE_GCP = os.path.exists(CREDENTIALS_PATH)
 if not USE_GCP:
-    # Jika env var diberikan tapi file tidak ada, beri peringatan
+    # Pastikan USE_GCP False by default jika file/config tidak ada, beri peringatan
     if os.getenv("GCP_CREDENTIALS_PATH") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
-        print(f"⚠️ GCP_CREDENTIALS_PATH set but file not found at {CREDENTIALS_PATH}")
+        logger.warning(f"GCP_CREDENTIALS_PATH set but file not found at {CREDENTIALS_PATH}")
 
 def get_credentials():
     """Get GCP credentials jika tersedia, return None otherwise"""
     if not USE_GCP:
         return None
     try:
-        creds = service_account.Credentials.from_service_account_file(CREDENTIALS_PATH)
-        # Jika credentials service account tidak punya scopes, set default scope
-        # agar refresh() bisa memperoleh access token tanpa error "invalid_scope".
-        try:
-            if getattr(creds, "scopes", None) is None and hasattr(creds, "with_scopes"):
-                creds = creds.with_scopes(["https://www.googleapis.com/auth/cloud-platform"])
-        except Exception:
-            # bila gagal set scopes, tetap kembalikan creds asli
-            pass
-        return creds
+        credentials = service_account.Credentials.from_service_account_file(CREDENTIALS_PATH)
+        return credentials
     except Exception as e:
-        print(f"⚠️ Warning: Tidak bisa load credentials - {e}")
+        logger.error(f"Tidak bisa load credentials - {e}")
         return None
 
-def upload_file_to_gcs(file_bytes, filename):
-    """Upload file ke GCS (optional, hanya jika credentials ada)"""
+def upload_file_to_gcs(file_bytes, filename, metadata: dict = None):
+    """Upload file ke GCS. Wajib berhasil agar Cloud Function terpanggil."""
     if not USE_GCP:
-        print(f"ℹ️ GCP tidak configured - skipping GCS upload untuk {filename}")
-        return True
+        error_msg = f"GCP tidak dikonfigurasi (credential tidak ditemukan). Upload {filename} dibatalkan."
+        logger.error(error_msg)
+        raise Exception(error_msg)
     
     try:
         client = storage.Client(credentials=get_credentials(), project=PROJECT_ID)
         bucket = client.bucket("retail-data-raw-izz")
         blob = bucket.blob(filename)
+        if metadata:
+            blob.metadata = metadata
         blob.upload_from_string(file_bytes)
-        print(f"✅ File {filename} uploaded to GCS")
+        logger.info(f"File {filename} uploaded to GCS")
         return True
     except Exception as e:
-        print(f"⚠️ GCS upload failed: {e}")
-        return False
+        logger.error(f"GCS upload failed: {e}")
+        raise e
 
-
-def _save_local_append(df):
-    import os
-    import pandas as pd
-    local_path = "processed_data_local.csv"
-    if os.path.exists(local_path):
-        try:
-            old_df = pd.read_csv(local_path)
-            combined_df = pd.concat([old_df, df], ignore_index=True)
-            combined_df.to_csv(local_path, index=False)
-        except Exception:
-            df.to_csv(local_path, index=False)
-    else:
-        df.to_csv(local_path, index=False)
-    print(f"✅ Data saved locally to {local_path} (appended)")
-
-def upload_dataframe_to_bq(df, table_id: str = None):
-    """Upload pandas DataFrame ke BigQuery (optional, hanya jika credentials ada)
+def upload_dataframe_to_bq(df: pd.DataFrame):
+    """Fallback lokal jika BigQuery tidak disetup"""
     
-    Jika GCP tidak configured, simpan locally ke CSV sebagai fallback.
-    """
     if not USE_GCP:
-        print(f"ℹ️ GCP tidak configured - saving data locally instead")
-        _save_local_append(df)
-        return True
-    
-    try:
-        client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
-        if table_id is None:
-            table_id = f"{PROJECT_ID}.retail_warehouse.integrated_retail_data"
-
-        job = client.load_table_from_dataframe(df, table_id)
-        job.result()  # tunggu hingga selesai
-        print(f"✅ Data uploaded to BigQuery")
-        return True
-    except Exception as e:
-        print(f"⚠️ BigQuery upload failed: {e}")
-        # Fallback: save locally
-        _save_local_append(df)
-        return True
-
-def get_data_from_bq():
-    """Get data dari BigQuery atau local file jika GCP tidak available"""
-    if not USE_GCP:
-        print(f"ℹ️ GCP tidak configured - trying to read from local file")
+        # Tulis ke file lokal sebagai fallback
         local_path = "processed_data_local.csv"
-        try:
-            import pandas as pd
-            df = pd.read_csv(local_path)
-            return df.to_dict(orient='records')
-        except FileNotFoundError:
-            print(f"⚠️ Tidak ada local data file - returning empty list")
-            return []
-    
+        df.to_csv(local_path, mode='a', index=False, header=not os.path.exists(local_path))
+        logger.info(f"Data saved locally to {local_path} (appended)")
+        return
+        
     try:
         client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
-        query = f"SELECT * FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` LIMIT 100"
-        # Mengembalikan data dalam bentuk dictionary agar bisa dikirim sebagai JSON
-        results = client.query(query).result()
-        print(f"✅ Data fetched from BigQuery")
+        table_id = f"{PROJECT_ID}.retail_warehouse.integrated_retail_data"
+        
+        if get_credentials() is None:
+            logger.warning("GCP tidak configured - saving data locally instead")
+            local_path = "processed_data_local.csv"
+            df.to_csv(local_path, mode='a', index=False, header=not os.path.exists(local_path))
+            return
+            
+        # Konversi tipe data object (string) yang mungkin bermasalah saat upload ke BQ
+        df = df.astype(str)
+            
+        job = client.load_table_from_dataframe(df, table_id)
+        job.result()  # Tunggu sampai selesai
+        logger.info("Data uploaded to BigQuery")
+    except Exception as e:
+        logger.error(f"BigQuery upload failed: {e}")
+        raise e
+
+def get_data_from_bq(limit=100) -> List[Dict[str, Any]]:
+    """Fallback mengambil data dari lokal CSV jika GCP tidak disetup"""
+    
+    if not USE_GCP or get_credentials() is None:
+        logger.warning("GCP tidak configured - trying to read from local file")
+        try:
+            local_path = "processed_data_local.csv"
+            if os.path.exists(local_path):
+                df = pd.read_csv(local_path)
+                return df.tail(limit).to_dict(orient="records")
+            logger.warning("Tidak ada local data file - returning empty list")
+            return []
+        except Exception:
+            return []
+            
+    try:
+        client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
+        # Menggunakan _latest view untuk mencegah pengiriman data duplikat ke Frontend
+        query = f"SELECT * FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data_latest` LIMIT {limit}"
+        query_job = client.query(query)
+        results = query_job.result()
+        logger.info("Data fetched from BigQuery")
         return [dict(row) for row in results]
     except Exception as e:
-        print(f"⚠️ BigQuery query failed: {e}")
-        # Fallback: try local file
-        local_path = "processed_data_local.csv"
-        try:
-            import pandas as pd
-            df = pd.read_csv(local_path)
-            return df.to_dict(orient='records')
-        except FileNotFoundError:
-            return []
+        logger.error(f"Failed to fetch data from BigQuery: {e}", exc_info=True)
+        return []
+
+def delete_data_from_bq(product_id: str) -> dict:
+    """Hapus data permanen dari BigQuery berdasarkan product_id dan kembalikan detail apa saja yang dihapus"""
+    if not USE_GCP or get_credentials() is None:
+        logger.error("GCP tidak dikonfigurasi, tidak dapat menghapus data.")
+        raise Exception("GCP credentials not available")
+        
+    try:
+        client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
+        
+        # Penyiapan kueri (SELECT untuk pencatatan, DELETE untuk eksekusi)
+        if product_id.lower() == "null":
+            select_query = f"SELECT product_id, product_name, source_file, processed_at FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id IS NULL"
+            delete_query = f"DELETE FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id IS NULL"
+        else:
+            select_query = f"SELECT product_id, product_name, source_file, processed_at FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id = @product_id"
+            delete_query = f"DELETE FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id = @product_id"
+            
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("product_id", "STRING", product_id)
+            ]
+        )
+        
+        # 1. Ambil data apa saja yang akan dihapus
+        select_job = client.query(select_query, job_config=job_config)
+        records_to_delete = [dict(row) for row in select_job.result()]
+        
+        # Format datetime menjadi string agar bisa dijadikan JSON (jika ada)
+        for r in records_to_delete:
+            if r.get("processed_at"):
+                r["processed_at"] = r["processed_at"].isoformat()
+        
+        # 2. Eksekusi penghapusan
+        delete_job = client.query(delete_query, job_config=job_config)
+        delete_job.result()  # Tunggu eksekusi selesai
+        
+        affected_rows = delete_job.num_dml_affected_rows or len(records_to_delete)
+        
+        logger.info(f"Deleted {affected_rows} rows from BigQuery for product_id={product_id}")
+        return {
+            "success": True,
+            "affected_rows": affected_rows,
+            "deleted_items": records_to_delete
+        }
+    except Exception as e:
+        logger.error(f"Failed to delete data from BigQuery: {e}", exc_info=True)
+        raise e

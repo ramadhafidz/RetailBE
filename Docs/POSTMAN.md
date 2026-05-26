@@ -41,7 +41,7 @@ Mulai versi dengan proteksi, beberapa endpoint memerlukan token Bearer dan role 
 ```json
 {
 	"username": "admin",
-	"password": "admin",
+	"password": "admin"
 }
 ```
 
@@ -52,7 +52,7 @@ Mulai versi dengan proteksi, beberapa endpoint memerlukan token Bearer dan role 
 ```json
 {
 	"username": "user",
-	"password": "user",
+	"password": "user"
 }
 ```
 
@@ -63,6 +63,28 @@ Authorization: Bearer <access_token>
 ```
 
 Catatan: Default credential lokal adalah `admin`/`admin` untuk dashboard dan `user`/`user` untuk upload data. Untuk production, set `AUTH_ADMIN_*`, `AUTH_USER_*`, dan `AUTH_SECRET_KEY` di environment server.
+
+### Trik Otomasi Token (Sangat Direkomendasikan)
+Agar Anda tidak perlu menyalin (*copy-paste*) token secara manual setiap kali login, Anda bisa menyuruh Postman menyimpan token tersebut secara otomatis ke variabel Environment.
+
+1. Buka *request* `POST /api/auth/login`.
+2. Masuk ke tab **Tests** (atau **Scripts** -> **Post-response**).
+3. Tempelkan kode JavaScript berikut:
+
+```javascript
+var jsonData = pm.response.json();
+
+if (jsonData.access_token) {
+    if (jsonData.role === "admin") {
+        pm.environment.set("admin_token", jsonData.access_token);
+    } else if (jsonData.role === "user") {
+        pm.environment.set("user_token", jsonData.access_token);
+    }
+}
+```
+
+4. Tekan **Save** lalu **Send**. Token akan otomatis tersimpan.
+5. Pada *request* lain (seperti Upload File), cukup masuk ke tab **Authorization** -> **Bearer Token**, dan isi kotaknya dengan `{{user_token}}` (untuk kasir) atau `{{admin_token}}` (untuk admin). Postman akan mengisinya otomatis!
 
 
 Endpoint ini dipakai untuk upload file CSV, diproses oleh backend, lalu hasilnya dikirim ke pipeline/Data Warehouse.
@@ -169,7 +191,38 @@ Endpoint ini dipakai untuk mengambil data terbaru dari BigQuery dan ditampilkan 
 - `total_records` menunjukkan jumlah data yang dikembalikan.
 - `data` berisi array record hasil query.
 
-## 5. Checklist testing cepat di Postman
+## 5. Testing endpoint `DELETE /api/data/{product_id}`
+
+Endpoint ini dipakai oleh Admin untuk menghapus data secara permanen dari BigQuery.
+
+### Langkah-langkah
+
+1. Klik **New** > **HTTP Request**.
+2. Ubah method menjadi **DELETE**.
+3. Isi URL dengan (contoh menghapus ID `TGR-01` atau `null` untuk testing data):
+
+```text
+{{base_url}}/api/data/null
+```
+
+4. Pastikan Anda sudah login sebagai Admin dan memasukkan Token di tab **Authorization**.
+5. Klik **Send**.
+
+### Response yang diharapkan
+
+```json
+{
+	"status": "success",
+	"message": "Data dengan product_id 'null' berhasil dihapus secara permanen."
+}
+```
+
+### Cara cek hasilnya
+
+- `status` harus bernilai `success`.
+- Panggil ulang `GET /api/data` dan pastikan barang tersebut tidak ada lagi di dalam senarai data.
+
+## 6. Checklist testing cepat di Postman
 
 Untuk memastikan semuanya sudah benar, cek poin berikut:
 
@@ -213,3 +266,22 @@ Urutan testing yang paling aman:
 - Dokumentasi ini dibuat untuk testing manual lewat Postman.
 - Kalau nanti mau otomatisasi, request yang sama bisa diekspor menjadi Postman Collection lalu dijalankan dengan Newman.
 
+## 9. Cara Melacak Data di Google Cloud (Tracing End-to-End)
+
+Setelah Anda berhasil mengunggah file (`/api/upload`), data tidak langsung muncul di `/api/data` karena ada proses latar belakang di Cloud. Berikut cara melacak perjalanannya:
+
+### A. Cek Google Cloud Storage (Bucket)
+1. Buka [Cloud Storage Buckets](https://console.cloud.google.com/storage/browser).
+2. Klik bucket penampung (*raw bucket*) Anda.
+3. Anda akan melihat file CSV mentah Anda! Jika Anda mengeklik file tersebut dan menggulir ke bagian bawah, Anda akan melihat **Custom Metadata** berisi `{"uploaded_by": "user"}` yang dititipkan oleh Backend.
+
+### B. Cek Google Cloud Functions (ML Engine)
+1. Buka [Cloud Run Services](https://console.cloud.google.com/run).
+2. Klik layanan Cloud Run / Function mesin ML Anda, lalu buka tab **Logs**.
+3. Cari *log* yang waktunya bersamaan dengan saat Anda menekan tombol di Postman. Anda akan melihat proses pembersihan ML berjalan. Ini membuktikan *Eventarc Trigger* bekerja sempurna!
+
+### C. Cek BigQuery (Data Warehouse)
+1. Buka [BigQuery SQL Workspace](https://console.cloud.google.com/bigquery).
+2. Di panel penjelajah sebelah kiri, cari *Project* Anda, rentangkan dataset `retail_warehouse`, dan klik tabel `integrated_retail_data`.
+3. Buka tab **Preview** (Pratinjau) atau jalankan SQL `SELECT * FROM ... LIMIT 10`.
+4. Anda akan melihat data yang sudah dirapikan oleh ML. Jangan lupa mengecek kolom `uploaded_by`.

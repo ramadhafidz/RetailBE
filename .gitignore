@@ -2,3 +2,7 @@ credential.json
 env/
 pyenv/
 .env
+backend.log
+.agents/
+__pycache__/
+*/__pycache__/

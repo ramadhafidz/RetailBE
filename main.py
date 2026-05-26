@@ -1,8 +1,13 @@
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+
+from logger_config import setup_logger
+
+logger = setup_logger("main")
 
 # Load env dari folder Back_end agar AUTH_* dan credential path terbaca konsisten
 load_dotenv(Path(__file__).resolve().parent / ".env")
@@ -24,6 +29,14 @@ except Exception:
 
 app = FastAPI(title="Retail Backend API")
 
+# Custom Exception Handler agar error JWT/Auth terlihat bagus dan seragam
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"status": "error", "message": str(exc.detail)}
+    )
+
 # Ambil konfigurasi origin dari env var, default ke "*" jika tidak ada
 import os
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "*")
@@ -40,6 +53,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
+    logger.info("Health check endpoint dipanggil")
     return {"message": "API berjalan"}
 
 

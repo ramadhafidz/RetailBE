@@ -20,4 +20,4 @@ data = [
 
 df = pd.DataFrame(data)
 df.to_csv("c:/Kuliah/Semester 6/Data Warehousing/Retail/Back_end/processed_data_local.csv", index=False)
-print("Berhasil men-generate processed_data_local.csv dengan data dummy dari berbagai user!")
+logger.info("Berhasil men-generate processed_data_local.csv dengan data dummy dari berbagai user!")

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request, Response
 from services.gcp_service import (
     upload_file_to_gcs,
     get_data_from_bq,
     upload_dataframe_to_bq,
+    delete_data_from_bq,
     get_credentials,
     CREDENTIALS_PATH,
     PROJECT_ID,
@@ -15,14 +16,17 @@ import io
 import pandas as pd
 import numpy as np
 from typing import Any, Dict
+from logger_config import setup_logger
+
+logger = setup_logger("data_routes")
 
 router = APIRouter()
 
-# Tambahkan path ke folder Machine_Learning agar kita bisa memanggil engine
+# Tambahkan path ke folder Machine_Learning (RetailML) agar kita bisa memanggil engine untuk preview
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-ML_PATH = os.path.join(REPO_ROOT, "Machine_Learning")
+ML_PATH = os.path.join(REPO_ROOT, "RetailML")
 if ML_PATH not in sys.path:
-    sys.path.insert(0, ML_PATH)
+    sys.path.append(ML_PATH)
 
 from column_mapper_lokal import standardize_dataframe
 import engine.column_mapper_core as core
@@ -68,17 +72,14 @@ def _resolve_role_credentials(role: str) -> tuple[str, str]:
 async def upload_data(file: UploadFile = File(...), current_user: dict = Depends(require_role("user"))):
     contents = await file.read()
 
-    # 1) Parse CSV
+    # 1) Parse CSV (Hanya 5 baris pertama untuk preview)
     try:
-        df_raw = pd.read_csv(io.BytesIO(contents))
+        df_raw = pd.read_csv(io.BytesIO(contents), nrows=5)
     except Exception:
         raise HTTPException(status_code=400, detail="Format CSV tidak terbaca")
 
-    # 2) Jalankan mesin ML untuk standarisasi
+    # 2) Jalankan mesin ML untuk standarisasi (hanya pada 5 baris)
     df_clean = standardize_dataframe(df_raw, filename=file.filename)
-    
-    # Tambahkan metadata pengunggah
-    df_clean["uploaded_by"] = current_user.get("username", "unknown")
 
     # 3) Buat mapping result dengan memanfaatkan fungsi map internal
     mapping_result: Dict[str, Any] = {}
@@ -89,23 +90,23 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
         except Exception:
             mapping_result[col] = None
 
-    # 4) Upload raw file ke GCS (arsip) dan upload cleaned data ke BigQuery
+    # 4) Upload raw file ke GCS beserta metadatanya agar diolah oleh Cloud Function
     try:
-        upload_file_to_gcs(contents, file.filename)
+        uploader = current_user.get("username", "unknown")
+        upload_file_to_gcs(contents, file.filename, metadata={"uploaded_by": uploader})
     except Exception as e:
-        print(f"⚠️ GCS upload error: {e}")
-        pass
+        logger.error(f"GCS upload error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Gagal mengirim file ke Cloud Storage: {str(e)}")
 
-    try:
-        upload_dataframe_to_bq(df_clean)
-    except Exception as e:
-        print(f"⚠️ BigQuery upload error: {e}")
-        # Jangan fail di sini - lanjutkan dengan local fallback
-        pass
+    # (Backend tidak lagi mengirim data ke BigQuery. Tugas itu diserahkan 100% ke Cloud Function)
 
     # 5) Siapkan response sesuai API_CONTRACT
-    metadata = {"total_rows_processed": int(len(df_raw)), "source_file": file.filename}
-    preview_data_raw = df_clean.head(1).to_dict(orient="records")
+    # Hitung jumlah baris asli berdasarkan karakter newline (dikurangi 1 untuk header)
+    total_lines = contents.count(b'\n')
+    actual_rows = total_lines - 1 if total_lines > 0 else 0
+    
+    metadata = {"total_rows_processed": actual_rows, "source_file": file.filename}
+    preview_data_raw = df_clean.to_dict(orient="records") # Kembalikan seluruh 5 baris preview
     preview_data = [_sanitize_record(r) for r in preview_data_raw]
 
     return {
@@ -123,6 +124,33 @@ async def get_data(current_user: dict = Depends(require_role("admin"))):
     data = get_data_from_bq()
     total = len(data) if isinstance(data, list) else 0
     return {"status": "success", "total_records": total, "data": data}
+
+
+# Endpoint DELETE untuk menghapus data secara permanen dari BigQuery (Hanya Admin)
+@router.delete("/api/data/{product_id}")
+async def delete_data(product_id: str, response: Response, current_user: dict = Depends(require_role("admin"))):
+    try:
+        result = delete_data_from_bq(product_id)
+        if result["success"]:
+            if result["affected_rows"] == 0:
+                response.status_code = 404
+                return {
+                    "status": "not_found",
+                    "message": f"Tidak ada data dengan product_id '{product_id}' yang ditemukan untuk dihapus.",
+                    "deleted_count": 0,
+                    "deleted_items": []
+                }
+            
+            return {
+                "status": "success", 
+                "message": f"Berhasil menghapus {result['affected_rows']} baris data dengan product_id '{product_id}' secara permanen.",
+                "deleted_count": result["affected_rows"],
+                "deleted_items": result["deleted_items"]
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Penghapusan gagal")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal menghapus data: {str(e)}")
 
 
 # Endpoint ringan untuk cek kredensial GCP — hanya refresh token, tidak menjalankan query
