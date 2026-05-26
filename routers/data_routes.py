@@ -24,7 +24,7 @@ router = APIRouter()
 
 # Tambahkan path ke folder Machine_Learning (RetailML) agar kita bisa memanggil engine untuk preview
 # Coba jalur produksi (Docker)
-ML_PATH_DOCKER = os.path.join(os.path.dirname(__file__), "..", "RetailML")
+ML_PATH_DOCKER = "/app/RetailML"
 # Coba jalur development (Local)
 ML_PATH_LOCAL = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "RetailML"))
 
