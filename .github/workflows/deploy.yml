@@ -16,6 +16,7 @@ on:
       - 'requirements.txt'
       - 'routers/**'
       - 'services/**'
+      - '.github/workflows/deploy.yml'
 
 jobs:
   deploy:
