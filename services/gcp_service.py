@@ -112,8 +112,8 @@ def get_data_from_bq(limit=100) -> List[Dict[str, Any]]:
         logger.error(f"Failed to fetch data from BigQuery: {e}", exc_info=True)
         return []
 
-def delete_data_from_bq(product_id: str) -> bool:
-    """Hapus data permanen dari BigQuery berdasarkan product_id (Hard Delete)"""
+def delete_data_from_bq(product_id: str) -> dict:
+    """Hapus data permanen dari BigQuery berdasarkan product_id dan kembalikan detail apa saja yang dihapus"""
     if not USE_GCP or get_credentials() is None:
         logger.error("GCP tidak dikonfigurasi, tidak dapat menghapus data.")
         raise Exception("GCP credentials not available")
@@ -121,11 +121,13 @@ def delete_data_from_bq(product_id: str) -> bool:
     try:
         client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
         
-        # Penanganan khusus untuk menghapus data testing masa lampau yang tidak memiliki product_id
+        # Penyiapan kueri (SELECT untuk pencatatan, DELETE untuk eksekusi)
         if product_id.lower() == "null":
-            query = f"DELETE FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id IS NULL"
+            select_query = f"SELECT product_id, product_name, source_file, processed_at FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id IS NULL"
+            delete_query = f"DELETE FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id IS NULL"
         else:
-            query = f"DELETE FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id = @product_id"
+            select_query = f"SELECT product_id, product_name, source_file, processed_at FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id = @product_id"
+            delete_query = f"DELETE FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data` WHERE product_id = @product_id"
             
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
@@ -133,11 +135,27 @@ def delete_data_from_bq(product_id: str) -> bool:
             ]
         )
         
-        query_job = client.query(query, job_config=job_config)
-        query_job.result()  # Tunggu eksekusi selesai
+        # 1. Ambil data apa saja yang akan dihapus
+        select_job = client.query(select_query, job_config=job_config)
+        records_to_delete = [dict(row) for row in select_job.result()]
         
-        logger.info(f"Data with product_id={product_id} deleted from BigQuery")
-        return True
+        # Format datetime menjadi string agar bisa dijadikan JSON (jika ada)
+        for r in records_to_delete:
+            if r.get("processed_at"):
+                r["processed_at"] = r["processed_at"].isoformat()
+        
+        # 2. Eksekusi penghapusan
+        delete_job = client.query(delete_query, job_config=job_config)
+        delete_job.result()  # Tunggu eksekusi selesai
+        
+        affected_rows = delete_job.num_dml_affected_rows or len(records_to_delete)
+        
+        logger.info(f"Deleted {affected_rows} rows from BigQuery for product_id={product_id}")
+        return {
+            "success": True,
+            "affected_rows": affected_rows,
+            "deleted_items": records_to_delete
+        }
     except Exception as e:
         logger.error(f"Failed to delete data from BigQuery: {e}", exc_info=True)
         raise e

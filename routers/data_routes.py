@@ -130,9 +130,16 @@ async def get_data(current_user: dict = Depends(require_role("admin"))):
 @router.delete("/api/data/{product_id}")
 async def delete_data(product_id: str, current_user: dict = Depends(require_role("admin"))):
     try:
-        success = delete_data_from_bq(product_id)
-        if success:
-            return {"status": "success", "message": f"Data dengan product_id '{product_id}' berhasil dihapus secara permanen."}
+        result = delete_data_from_bq(product_id)
+        if result["success"]:
+            return {
+                "status": "success", 
+                "message": f"Berhasil menghapus {result['affected_rows']} baris data dengan product_id '{product_id}' secara permanen.",
+                "deleted_count": result["affected_rows"],
+                "deleted_items": result["deleted_items"]
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Penghapusan gagal")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal menghapus data: {str(e)}")
 
