@@ -83,8 +83,14 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
     # 1) Parse CSV (Hanya 5 baris pertama untuk preview)
     try:
         df_raw = pd.read_csv(io.BytesIO(contents), nrows=5)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Format CSV tidak terbaca")
+    except UnicodeDecodeError:
+        try:
+            # Fallback encoding untuk file non-UTF-8 (misalnya Windows-1252 / Latin-1)
+            df_raw = pd.read_csv(io.BytesIO(contents), nrows=5, encoding="latin1")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Format CSV tidak terbaca walau dengan fallback encoding: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Format CSV tidak terbaca: {str(e)}")
 
     # 2) Jalankan mesin ML untuk standarisasi (hanya pada 5 baris)
     df_clean = standardize_dataframe(df_raw, filename=file.filename)
@@ -190,11 +196,19 @@ async def login(req: Request):
         raise HTTPException(status_code=400, detail="username and password required")
 
     admin_user, admin_pass = _resolve_role_credentials("admin")
-    user_user, user_pass = _resolve_role_credentials("user")
+
+    # Baca daftar user dari env
+    users_env = os.getenv("AUTH_WARUNG_USERS", "")
+    valid_users = {}
+    if users_env:
+        for pair in users_env.split(","):
+            if ":" in pair:
+                k, v = pair.split(":", 1)
+                valid_users[k.strip().lower()] = v.strip()
 
     if username == admin_user and password == admin_pass:
         role = "admin"
-    elif password == user_pass:
+    elif username.lower() in valid_users and password == valid_users[username.lower()]:
         role = "user"
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
