@@ -39,7 +39,7 @@ Agar GitHub Actions dapat mengakses server dengan aman, kita akan menggunakan us
 1. Buka terminal server Debian Anda via SSH dan pastikan Anda login sebagai user `datawarehousing`.
 2. Lakukan _Clone_ repositori ini di _home directory_ Anda:
    ```bash
-   cd ~
+   mkdir -p ~/app && cd ~/app
    git clone https://github.com/ramadhafidz/RetailBE.git
    cd RetailBE
    ```
