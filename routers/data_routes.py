@@ -196,11 +196,18 @@ async def login(req: Request):
         raise HTTPException(status_code=400, detail="username and password required")
 
     admin_user, admin_pass = _resolve_role_credentials("admin")
-    user_user, user_pass = _resolve_role_credentials("user")
+
+    VALID_USERS = {
+        "hapis": "hapis123",
+        "ismet": "ismet123",
+        "udin": "udin123",
+        "rindra": "rindra123",
+        "fikri": "fikri123"
+    }
 
     if username == admin_user and password == admin_pass:
         role = "admin"
-    elif password == user_pass:
+    elif username.lower() in VALID_USERS and password == VALID_USERS[username.lower()]:
         role = "user"
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
