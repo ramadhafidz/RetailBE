@@ -41,7 +41,7 @@ Mulai versi dengan proteksi, beberapa endpoint memerlukan token Bearer dan role 
 ```json
 {
 	"username": "admin",
-	"password": "admin",
+	"password": "admin"
 }
 ```
 
@@ -52,7 +52,7 @@ Mulai versi dengan proteksi, beberapa endpoint memerlukan token Bearer dan role 
 ```json
 {
 	"username": "user",
-	"password": "user",
+	"password": "user"
 }
 ```
 
@@ -63,6 +63,28 @@ Authorization: Bearer <access_token>
 ```
 
 Catatan: Default credential lokal adalah `admin`/`admin` untuk dashboard dan `user`/`user` untuk upload data. Untuk production, set `AUTH_ADMIN_*`, `AUTH_USER_*`, dan `AUTH_SECRET_KEY` di environment server.
+
+### Trik Otomasi Token (Sangat Direkomendasikan)
+Agar Anda tidak perlu menyalin (*copy-paste*) token secara manual setiap kali login, Anda bisa menyuruh Postman menyimpan token tersebut secara otomatis ke variabel Environment.
+
+1. Buka *request* `POST /api/auth/login`.
+2. Masuk ke tab **Tests** (atau **Scripts** -> **Post-response**).
+3. Tempelkan kode JavaScript berikut:
+
+```javascript
+var jsonData = pm.response.json();
+
+if (jsonData.access_token) {
+    if (jsonData.role === "admin") {
+        pm.environment.set("admin_token", jsonData.access_token);
+    } else if (jsonData.role === "user") {
+        pm.environment.set("user_token", jsonData.access_token);
+    }
+}
+```
+
+4. Tekan **Save** lalu **Send**. Token akan otomatis tersimpan.
+5. Pada *request* lain (seperti Upload File), cukup masuk ke tab **Authorization** -> **Bearer Token**, dan isi kotaknya dengan `{{user_token}}` (untuk kasir) atau `{{admin_token}}` (untuk admin). Postman akan mengisinya otomatis!
 
 
 Endpoint ini dipakai untuk upload file CSV, diproses oleh backend, lalu hasilnya dikirim ke pipeline/Data Warehouse.
