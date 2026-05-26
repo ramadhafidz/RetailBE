@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request
 from services.gcp_service import (
     upload_file_to_gcs,
     get_data_from_bq,
+    get_total_records_from_bq,
     upload_dataframe_to_bq,
     delete_data_from_bq,
     get_credentials,
@@ -135,14 +136,17 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
 # Endpoint GET untuk memberikan data ke Frontend
 @router.get("/api/data")
 async def get_data(page: int = 1, page_size: int = 100, current_user: dict = Depends(require_role("admin"))):
-    offset = (page - 1) * page_size
-    data = get_data_from_bq(limit=page_size, offset=offset)
-    total = len(data) if isinstance(data, list) else 0
+    safe_page = max(page, 1)
+    safe_page_size = min(max(page_size, 1), 1000)
+    offset = (safe_page - 1) * safe_page_size
+    data = get_data_from_bq(limit=safe_page_size, offset=offset)
+    total = get_total_records_from_bq()
     return {
         "status": "success", 
-        "page": page,
-        "page_size": page_size,
-        "total_records_fetched": total, 
+        "page": safe_page,
+        "page_size": safe_page_size,
+        "total_records": total,
+        "total_records_fetched": len(data) if isinstance(data, list) else 0,
         "data": data
     }
 

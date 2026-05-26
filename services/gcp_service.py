@@ -112,6 +112,32 @@ def get_data_from_bq(limit=100, offset=0) -> List[Dict[str, Any]]:
         logger.error(f"Failed to fetch data from BigQuery: {e}", exc_info=True)
         return []
 
+
+def get_total_records_from_bq() -> int:
+    """Hitung total record aktual untuk pagination."""
+
+    if not USE_GCP or get_credentials() is None:
+        logger.warning("GCP not configured - counting rows from local file")
+        try:
+            local_path = "processed_data_local.csv"
+            if os.path.exists(local_path):
+                df = pd.read_csv(local_path)
+                return int(len(df))
+            return 0
+        except Exception:
+            return 0
+
+    try:
+        client = bigquery.Client(credentials=get_credentials(), project=PROJECT_ID)
+        query = f"SELECT COUNT(1) AS total FROM `{PROJECT_ID}.retail_warehouse.integrated_retail_data_latest`"
+        query_job = client.query(query)
+        result = query_job.result()
+        row = next(iter(result), None)
+        return int(getattr(row, "total", 0) or 0)
+    except Exception as e:
+        logger.error(f"Failed to count records from BigQuery: {e}", exc_info=True)
+        return 0
+
 def delete_data_from_bq(product_id: str) -> dict:
     """Hapus data permanen dari BigQuery berdasarkan product_id dan kembalikan detail apa saja yang dihapus"""
     if not USE_GCP or get_credentials() is None:

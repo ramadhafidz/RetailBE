@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -12,20 +13,22 @@ logger = setup_logger("main")
 # Load env dari folder Back_end agar AUTH_* dan credential path terbaca konsisten
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
-# Import router secara robust: dukung 3 skenario
+# Import router secara robust: dukung 2 skenario yang valid
 # 1) menjalankan dari root: `uvicorn Back_end.main:app`
 # 2) menjalankan dari folder Back_end: `uvicorn main:app`
-# 3) paket terinstal/struktur lain
 try:
     # Prefer import dengan nama paket (jalankan dari root)
     from Back_end.routers import data_routes
-except Exception:
+except ImportError:
     try:
         # Jalankan dari dalam folder Back_end
         from routers import data_routes
-    except Exception:
-        # Fallback relatif (jika Back_end adalah paket)
-        from .routers import data_routes
+    except ImportError:
+        # Tambahkan root project ke sys.path lalu coba lagi lewat nama paket
+        project_root = Path(__file__).resolve().parent.parent
+        if str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+        from Back_end.routers import data_routes
 
 app = FastAPI(title="Retail Backend API")
 
