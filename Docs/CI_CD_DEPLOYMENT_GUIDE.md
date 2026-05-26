@@ -6,6 +6,8 @@ Repositori Backend (`RetailBE`) ini dilengkapi dengan pipeline **Continuous Depl
 
 Karena skrip ini akan melakukan SSH ke server Anda dan mengeksekusi `docker compose`, server rumah Anda harus sudah siap terlebih dahulu.
 
+**Catatan Penting:** Repositori ML (`RetailML`) akan secara otomatis di-clone dan dimasukkan ke dalam Docker container Backend saat proses build berlangsung. Oleh karena itu, Anda **TIDAK PERLU** melakukan clone repositori ML secara manual di server rumah Anda.
+
 1. Buka terminal server Debian Anda via SSH.
 2. Lakukan *Clone* repositori ini di *home directory* Anda:
    ```bash
