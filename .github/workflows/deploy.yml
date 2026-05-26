@@ -1,0 +1,52 @@
+name: Deploy Backend to Home Server (Tailscale)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'main.py'
+      - 'auth.py'
+      - 'logger_config.py'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'requirements.txt'
+      - 'routers/**'
+      - 'services/**'
+
+jobs:
+  deploy:
+    # Hanya jalankan jika BUKAN dari repo fork (menghindari error notifikasi bagi yang melakukan fork)
+    if: github.event.repository.fork == false
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Connect to Tailscale Network
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Execute Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 100.71.233.70
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "🚀 Memulai Deployment Backend..."
+            
+            # Pindah ke direktori project (pastikan Anda sudah melakukan 'git clone' sebelumnya di server)
+            cd ~/RetailBE || { echo "Direktori ~/RetailBE tidak ditemukan! Lakukan git clone terlebih dahulu."; exit 1; }
+            
+            # Tarik pembaruan terbaru dari GitHub
+            git pull origin main
+            
+            # Bangun ulang container docker tanpa mengganggu container lain
+            docker compose up -d --build
+            
+            echo "✅ Deployment selesai!"
