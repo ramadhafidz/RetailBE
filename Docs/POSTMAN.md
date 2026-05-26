@@ -169,7 +169,38 @@ Endpoint ini dipakai untuk mengambil data terbaru dari BigQuery dan ditampilkan 
 - `total_records` menunjukkan jumlah data yang dikembalikan.
 - `data` berisi array record hasil query.
 
-## 5. Checklist testing cepat di Postman
+## 5. Testing endpoint `DELETE /api/data/{product_id}`
+
+Endpoint ini dipakai oleh Admin untuk menghapus data secara permanen dari BigQuery.
+
+### Langkah-langkah
+
+1. Klik **New** > **HTTP Request**.
+2. Ubah method menjadi **DELETE**.
+3. Isi URL dengan (contoh menghapus ID `TGR-01` atau `null` untuk testing data):
+
+```text
+{{base_url}}/api/data/null
+```
+
+4. Pastikan Anda sudah login sebagai Admin dan memasukkan Token di tab **Authorization**.
+5. Klik **Send**.
+
+### Response yang diharapkan
+
+```json
+{
+	"status": "success",
+	"message": "Data dengan product_id 'null' berhasil dihapus secara permanen."
+}
+```
+
+### Cara cek hasilnya
+
+- `status` harus bernilai `success`.
+- Panggil ulang `GET /api/data` dan pastikan barang tersebut tidak ada lagi di dalam senarai data.
+
+## 6. Checklist testing cepat di Postman
 
 Untuk memastikan semuanya sudah benar, cek poin berikut:
 
