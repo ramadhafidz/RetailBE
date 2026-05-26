@@ -244,3 +244,22 @@ Urutan testing yang paling aman:
 - Dokumentasi ini dibuat untuk testing manual lewat Postman.
 - Kalau nanti mau otomatisasi, request yang sama bisa diekspor menjadi Postman Collection lalu dijalankan dengan Newman.
 
+## 9. Cara Melacak Data di Google Cloud (Tracing End-to-End)
+
+Setelah Anda berhasil mengunggah file (`/api/upload`), data tidak langsung muncul di `/api/data` karena ada proses latar belakang di Cloud. Berikut cara melacak perjalanannya:
+
+### A. Cek Google Cloud Storage (Bucket)
+1. Buka [Cloud Storage Buckets](https://console.cloud.google.com/storage/browser).
+2. Klik bucket penampung (*raw bucket*) Anda.
+3. Anda akan melihat file CSV mentah Anda! Jika Anda mengeklik file tersebut dan menggulir ke bagian bawah, Anda akan melihat **Custom Metadata** berisi `{"uploaded_by": "user"}` yang dititipkan oleh Backend.
+
+### B. Cek Google Cloud Functions (ML Engine)
+1. Buka [Cloud Run Services](https://console.cloud.google.com/run).
+2. Klik layanan Cloud Run / Function mesin ML Anda, lalu buka tab **Logs**.
+3. Cari *log* yang waktunya bersamaan dengan saat Anda menekan tombol di Postman. Anda akan melihat proses pembersihan ML berjalan. Ini membuktikan *Eventarc Trigger* bekerja sempurna!
+
+### C. Cek BigQuery (Data Warehouse)
+1. Buka [BigQuery SQL Workspace](https://console.cloud.google.com/bigquery).
+2. Di panel penjelajah sebelah kiri, cari *Project* Anda, rentangkan dataset `retail_warehouse`, dan klik tabel `integrated_retail_data`.
+3. Buka tab **Preview** (Pratinjau) atau jalankan SQL `SELECT * FROM ... LIMIT 10`.
+4. Anda akan melihat data yang sudah dirapikan oleh ML. Jangan lupa mengecek kolom `uploaded_by`.
