@@ -134,8 +134,8 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
 
 # Endpoint GET untuk memberikan data ke Frontend
 @router.get("/api/data")
-async def get_data(current_user: dict = Depends(require_role("admin"))):
-    data = get_data_from_bq()
+async def get_data(limit: int = 1000, current_user: dict = Depends(require_role("admin"))):
+    data = get_data_from_bq(limit=limit)
     total = len(data) if isinstance(data, list) else 0
     return {"status": "success", "total_records": total, "data": data}
 
