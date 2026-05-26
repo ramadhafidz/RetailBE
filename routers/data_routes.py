@@ -83,8 +83,14 @@ async def upload_data(file: UploadFile = File(...), current_user: dict = Depends
     # 1) Parse CSV (Hanya 5 baris pertama untuk preview)
     try:
         df_raw = pd.read_csv(io.BytesIO(contents), nrows=5)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Format CSV tidak terbaca")
+    except UnicodeDecodeError:
+        try:
+            # Fallback encoding untuk file non-UTF-8 (misalnya Windows-1252 / Latin-1)
+            df_raw = pd.read_csv(io.BytesIO(contents), nrows=5, encoding="latin1")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Format CSV tidak terbaca walau dengan fallback encoding: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Format CSV tidak terbaca: {str(e)}")
 
     # 2) Jalankan mesin ML untuk standarisasi (hanya pada 5 baris)
     df_clean = standardize_dataframe(df_raw, filename=file.filename)
