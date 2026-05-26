@@ -8,6 +8,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN git clone https://github.com/ramadhafidz/RetailML.git /app/RetailML
+RUN pip install --no-cache-dir -r /app/RetailML/requirements.txt
 
 # Copy source code
 COPY . .
