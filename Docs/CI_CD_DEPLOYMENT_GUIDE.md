@@ -54,7 +54,7 @@ Agar robot GitHub bisa menumpang masuk ke jaringan Tailscale Anda dengan aman, A
 1. Buka [Tailscale Admin Console](https://login.tailscale.com/admin/settings/oauth).
 2. Pergi ke menu **Settings > OAuth clients** dan klik **Generate OAuth client**.
 3. Beri nama, misalnya `github-actions-retailbe`.
-4. Pada bagian **Scopes**, pilih **Custom scopes**. Gulir ke bawah ke kategori **Devices**, lalu centang kotak **Write** (dan **Read**) pada opsi **Core** (Read or modify devices and their properties). Ini penting agar GitHub Actions bisa mendaftarkan dirinya sebagai mesin sementara di jaringan Anda.
+4. Pada bagian **Scopes**, pilih **Custom scopes**. Gulir ke bawah ke kategori **Keys**, lalu centang kotak **Write** pada opsi **Auth Keys**. Kemudian, gulir juga ke kategori **Devices**, dan centang kotak **Write** pada opsi **Core**. Kedua izin ini penting agar GitHub Actions bisa membuat kunci otentikasi sementara dan mendaftarkan dirinya di jaringan Anda.
 5. Pada bagian **Tags (required for write scope)**, ketikkan dan pilih **`tag:ci`**.
    - _Penting:_ Jika Anda tidak bisa menemukan atau mengetik `tag:ci`, klik tautan biru **"Manage tags in Access Controls"** di bawah kotak pencarian. Di editor JSON ACL yang terbuka, tambahkan blok berikut di bagian `"tagOwners"`:
      ```json

@@ -41,7 +41,7 @@ jobs:
             echo "🚀 Memulai Deployment Backend..."
             
             # Pindah ke direktori project (pastikan Anda sudah melakukan 'git clone' sebelumnya di server)
-            cd ~/RetailBE || { echo "Direktori ~/RetailBE tidak ditemukan! Lakukan git clone terlebih dahulu."; exit 1; }
+            cd ~/app/RetailBE || { echo "Direktori ~/RetailBE tidak ditemukan! Lakukan git clone terlebih dahulu."; exit 1; }
             
             # Tarik pembaruan terbaru dari GitHub
             git pull origin main
